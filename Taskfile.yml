@@ -1,0 +1,15 @@
+version: "3"
+
+tasks:
+  dbdocs:
+    desc: Build database documentation
+    cmds:
+      - dbdocs build docs/database.dbml
+  migrateup:
+    desc: Migrate up the database schema
+    cmds:
+      - migrate -database ${POSTGRESQL_URL} -path migrations up
+  migratedown:
+    desc: Migrate down the database schema
+    cmds:
+      - migrate -database ${POSTGRESQL_URL} -path migrations down
