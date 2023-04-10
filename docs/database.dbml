@@ -1,0 +1,40 @@
+Project public_library_v2 {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Public Library V2 Database
+  '''
+}
+
+Table user as U {
+  id int [pk, increment]
+  username varchar [unique, not null]
+  password varchar [not null]
+  email varchar [unique, not null]
+  updated_at  timestamp
+  created_at timestamp [not null, default: `now()`]
+}
+
+Table book as B {
+  id int [pk, increment]
+  title varchar [not null]
+  author varchar [not null]
+  amount int [not null]
+  updated_at  timestamp
+  created_at timestamp [not null, default: `now()`]
+  Indexes {
+    title
+  }
+}
+
+Table loan {
+  id int [pk, increment]
+  user_id int [ref: > U.id, not null]
+  book_id int [ref: > B.id, not null]
+  is_returned boolean [not null]
+  created_at timestamp [not null, default: `now()`]
+    Indexes {
+    user_id
+    book_id
+    (user_id, book_id)
+  }
+}
