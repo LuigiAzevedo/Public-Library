@@ -8,8 +8,8 @@ tasks:
   migrateup:
     desc: Migrate up the database schema
     cmds:
-      - migrate -database ${POSTGRESQL_URL} -path migrations up
+      - migrate -database ${POSTGRESQL_URL} -path internal/db/migrations up
   migratedown:
     desc: Migrate down the database schema
     cmds:
-      - migrate -database ${POSTGRESQL_URL} -path migrations down
+      - migrate -database ${POSTGRESQL_URL} -path internal/db/migrations down
