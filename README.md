@@ -2,12 +2,11 @@
 
 Under construction :construction_worker::building_construction::bricks:
 
-
-### Documentation
+## Documentation
 
 - [Database](https://dbdocs.io/luigiazevedo97/public_library_v2)
 
-### Tools used
+## Tools used
 
 - [Golang](https://go.dev/) - Programming language
 
@@ -18,3 +17,5 @@ Under construction :construction_worker::building_construction::bricks:
 - [DBeaver](https://dbeaver.io/) - Database administration tool
 
 - [Migrate](https://github.com/golang-migrate/migrate) - Database migrations
+
+- [Golangci-lint](https://github.com/golangci/golangci-lint) - Automated code checking for programmatic and stylistic errors
