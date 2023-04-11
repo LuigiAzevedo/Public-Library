@@ -13,3 +13,7 @@ tasks:
     desc: Migrate down the database schema
     cmds:
       - migrate -database ${POSTGRESQL_URL} -path internal/db/migrations down
+  lint:
+    desc: Check code for programmatic and stylistic errors
+    cmds:
+      - golangci-lint run
