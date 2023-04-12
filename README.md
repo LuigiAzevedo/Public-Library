@@ -6,6 +6,10 @@ Under construction :construction_worker::building_construction::bricks:
 
 - [Database](https://dbdocs.io/luigiazevedo97/public_library_v2)
 
+## Dependencies
+
+- [bcrypt](golang.org/x/crypto) - Password encryption function
+
 ## Tools used
 
 - [Golang](https://go.dev/) - Programming language
