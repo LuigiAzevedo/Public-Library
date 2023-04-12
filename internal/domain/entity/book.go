@@ -23,7 +23,7 @@ func NewBook(title, author string, amount int) (*Book, error) {
 		CreatedAt: time.Now(),
 	}
 
-	err := book.validate()
+	err := book.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func NewBook(title, author string, amount int) (*Book, error) {
 }
 
 // Validate validates the book entity.
-func (book *Book) validate() error {
+func (book *Book) Validate() error {
 	if book.Title == "" || book.Author == "" || book.Amount <= 0 {
 		return errors.New("invalid book")
 	}

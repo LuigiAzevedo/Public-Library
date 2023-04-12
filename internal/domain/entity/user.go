@@ -25,7 +25,7 @@ func NewUser(username, password, email string) (*User, error) {
 		CreatedAt: time.Now(),
 	}
 
-	err := user.validate()
+	err := user.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func NewUser(username, password, email string) (*User, error) {
 }
 
 // Validate validates the user entity.
-func (user *User) validate() error {
+func (user *User) Validate() error {
 	if user.Username == "" || user.Password == "" || user.Email == "" {
 		return errors.New("username, password and email can't be empty")
 	}

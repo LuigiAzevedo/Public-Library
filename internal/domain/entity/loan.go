@@ -20,7 +20,7 @@ func NewLoan(userID, bookID int) (*Loan, error) {
 		BookID: bookID,
 	}
 
-	err := loan.validate()
+	err := loan.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func NewLoan(userID, bookID int) (*Loan, error) {
 }
 
 // Validate validates the loan entity.
-func (loan *Loan) validate() error {
+func (loan *Loan) Validate() error {
 	if loan.UserID <= 0 || loan.BookID <= 0 {
 		return errors.New("user ID and book ID can't be empty")
 	}
