@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
 	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
@@ -25,7 +25,7 @@ func NewLoanService(repository r.LoanRepository) u.LoanUsecase {
 func (s *loanService) BorrowBook(userID, bookID int) error {
 	exists, err := s.loanRepo.CheckNotReturned(userID, bookID)
 	if err != nil {
-		return errs.ErrorWrapper(errs.ErrBorrowBook, err)
+		return errors.Wrap(err, errs.ErrBorrowBook)
 	}
 	if exists {
 		return errors.New("return the book first before borrowing it again")
@@ -33,12 +33,12 @@ func (s *loanService) BorrowBook(userID, bookID int) error {
 
 	user, err := s.userRepo.Get(userID)
 	if err != nil {
-		return errs.ErrorWrapper(errs.ErrGetUser, err)
+		return errors.Wrap(err, errs.ErrGetUser)
 	}
 
 	book, err := s.bookRepo.Get(bookID)
 	if err != nil {
-		return errs.ErrorWrapper(errs.ErrGetBook, err)
+		return errors.Wrap(err, errs.ErrGetBook)
 	}
 
 	book.Amount -= 1
@@ -48,7 +48,7 @@ func (s *loanService) BorrowBook(userID, bookID int) error {
 
 	err = s.loanRepo.BorrowTransaction(user, book)
 	if err != nil {
-		return errs.ErrorWrapper(errs.ErrBorrowBook, err)
+		return errors.Wrap(err, errs.ErrBorrowBook)
 	}
 
 	return nil
@@ -65,19 +65,19 @@ func (s *loanService) ReturnBook(userID, bookID int) error {
 
 	user, err := s.userRepo.Get(userID)
 	if err != nil {
-		return errs.ErrorWrapper(errs.ErrGetUser, err)
+		return errors.Wrap(err, errs.ErrGetUser)
 	}
 
 	book, err := s.bookRepo.Get(bookID)
 	if err != nil {
-		return errs.ErrorWrapper(errs.ErrGetBook, err)
+		return errors.Wrap(err, errs.ErrGetBook)
 	}
 
 	book.Amount += 1
 
 	err = s.loanRepo.ReturnTransaction(user, book)
 	if err != nil {
-		return errs.ErrorWrapper("an error occurred while returning the book", err)
+		return errors.Wrap(err, "an error occurred while returning the book")
 	}
 
 	return nil
@@ -86,7 +86,7 @@ func (s *loanService) ReturnBook(userID, bookID int) error {
 func (s *loanService) SearchUserLoans(userID int) ([]*entity.Loan, error) {
 	loans, err := s.loanRepo.Search(userID)
 	if err != nil {
-		return nil, errs.ErrorWrapper("an error occurred while searching loans", err)
+		return nil, errors.Wrap(err, "an error occurred while searching loans")
 	}
 
 	return loans, nil
