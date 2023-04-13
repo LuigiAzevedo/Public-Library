@@ -21,7 +21,7 @@ func NewUserRepository(db *sql.DB) r.UserRepository {
 
 // Get gets user info by id
 func (r *userRepository) Get(id int) (*entity.User, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM user WHERE id = $1")
+	stmt, err := r.db.Prepare("SELECT * FROM users WHERE id = $1")
 	if err != nil {
 		return nil, err
 	}
@@ -30,9 +30,15 @@ func (r *userRepository) Get(id int) (*entity.User, error) {
 	u := &entity.User{}
 
 	row := stmt.QueryRow(id)
-	err = row.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &u.UpdatedAt, &u.CreatedAt)
+
+	var updatedAt sql.NullTime
+	err = row.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &updatedAt, &u.CreatedAt)
 	if err != nil {
 		return nil, err
+	}
+	// check if updated_at is NULL before scanning it
+	if updatedAt.Valid {
+		u.UpdatedAt = updatedAt.Time
 	}
 
 	return u, nil
@@ -40,7 +46,7 @@ func (r *userRepository) Get(id int) (*entity.User, error) {
 
 // Create creates a new user
 func (r *userRepository) Create(u *entity.User) (int, error) {
-	stmt, err := r.db.Prepare("INSERT INTO user (username, password, email) VALUES ($1, $2, $3) RETURNING id")
+	stmt, err := r.db.Prepare("INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING id")
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +62,7 @@ func (r *userRepository) Create(u *entity.User) (int, error) {
 
 // Update updates an user
 func (r *userRepository) Update(u *entity.User) error {
-	stmt, err := r.db.Prepare("UPDATE user SET username = $1, password = $2, email = $3, updated_at = $4 WHERE id = $5")
+	stmt, err := r.db.Prepare("UPDATE users SET username = $1, password = $2, email = $3, updated_at = $4 WHERE id = $5")
 	if err != nil {
 		return err
 	}
@@ -79,7 +85,7 @@ func (r *userRepository) Update(u *entity.User) error {
 
 // Delete deletes an user by id
 func (r *userRepository) Delete(id int) error {
-	stmt, err := r.db.Prepare("DELETE FROM user WHERE id = $1")
+	stmt, err := r.db.Prepare("DELETE FROM users WHERE id = $1")
 	if err != nil {
 		return err
 	}
