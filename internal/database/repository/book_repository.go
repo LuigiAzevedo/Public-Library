@@ -21,7 +21,7 @@ func NewBookRepository(db *sql.DB) r.BookRepository {
 
 // Get gets book info by id
 func (r *bookRepository) Get(id int) (*entity.Book, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM book WHERE id = $1")
+	stmt, err := r.db.Prepare("SELECT * FROM books WHERE id = $1")
 	if err != nil {
 		return nil, err
 	}
@@ -30,9 +30,16 @@ func (r *bookRepository) Get(id int) (*entity.Book, error) {
 	b := &entity.Book{}
 
 	row := stmt.QueryRow(id)
-	err = row.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &b.UpdatedAt, &b.CreatedAt)
+
+	var updatedAt sql.NullTime
+	err = row.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &updatedAt, &b.CreatedAt)
 	if err != nil {
 		return nil, err
+	}
+
+	// check if updated_at is NULL before scanning it
+	if updatedAt.Valid {
+		b.UpdatedAt = updatedAt.Time
 	}
 
 	return b, nil
@@ -40,7 +47,7 @@ func (r *bookRepository) Get(id int) (*entity.Book, error) {
 
 // List list all books in the database
 func (r *bookRepository) List() ([]*entity.Book, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM book")
+	stmt, err := r.db.Prepare("SELECT * FROM books")
 	if err != nil {
 		return nil, err
 	}
@@ -54,10 +61,15 @@ func (r *bookRepository) List() ([]*entity.Book, error) {
 	var books []*entity.Book
 	for rows.Next() {
 		var b entity.Book
+		var updatedAt sql.NullTime
 
-		err = rows.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &b.UpdatedAt, &b.CreatedAt)
+		err = rows.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &updatedAt, &b.CreatedAt)
 		if err != nil {
 			return nil, err
+		}
+		// check if updated_at is NULL before scanning it
+		if updatedAt.Valid {
+			b.UpdatedAt = updatedAt.Time
 		}
 
 		books = append(books, &b)
@@ -72,7 +84,7 @@ func (r *bookRepository) List() ([]*entity.Book, error) {
 
 // Search searches books matching the sent query
 func (r *bookRepository) Search(query string) ([]*entity.Book, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM book WHERE title LIKE $1")
+	stmt, err := r.db.Prepare("SELECT * FROM books WHERE title LIKE $1")
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +98,15 @@ func (r *bookRepository) Search(query string) ([]*entity.Book, error) {
 	var books []*entity.Book
 	for rows.Next() {
 		var b entity.Book
+		var updatedAt sql.NullTime
 
-		err = rows.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &b.UpdatedAt, &b.CreatedAt)
+		err = rows.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &updatedAt, &b.CreatedAt)
 		if err != nil {
 			return nil, err
+		}
+		// check if updated_at is NULL before scanning it
+		if updatedAt.Valid {
+			b.UpdatedAt = updatedAt.Time
 		}
 
 		books = append(books, &b)
@@ -104,7 +121,7 @@ func (r *bookRepository) Search(query string) ([]*entity.Book, error) {
 
 // Create creates a new book
 func (r *bookRepository) Create(b *entity.Book) (int, error) {
-	stmt, err := r.db.Prepare("INSERT INTO book (title, author, amount) VALUES ($1, $2, $3) RETURNING id")
+	stmt, err := r.db.Prepare("INSERT INTO books (title, author, amount) VALUES ($1, $2, $3) RETURNING id")
 	if err != nil {
 		return 0, err
 	}
@@ -120,7 +137,7 @@ func (r *bookRepository) Create(b *entity.Book) (int, error) {
 
 // Update updates a book
 func (r *bookRepository) Update(b *entity.Book) error {
-	stmt, err := r.db.Prepare("UPDATE book SET title = $1, author = $2, amount = $3, updated_at = $4 WHERE id = $5")
+	stmt, err := r.db.Prepare("UPDATE books SET title = $1, author = $2, amount = $3, updated_at = $4 WHERE id = $5")
 	if err != nil {
 		return err
 	}
@@ -143,7 +160,7 @@ func (r *bookRepository) Update(b *entity.Book) error {
 
 // Delete deletes a book by id
 func (r *bookRepository) Delete(id int) error {
-	stmt, err := r.db.Prepare("DELETE FROM book WHERE id = $1")
+	stmt, err := r.db.Prepare("DELETE FROM books WHERE id = $1")
 	if err != nil {
 		return err
 	}

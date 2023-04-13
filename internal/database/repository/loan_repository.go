@@ -20,7 +20,7 @@ func NewLoanRepository(db *sql.DB) r.LoanRepository {
 
 // CheckNotReturned verify if a loan not returned exists in the database
 func (r *loanRepository) CheckNotReturned(userID int, bookID int) (bool, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM loan WHERE is_returned = false AND user_id = $1 AND book_id = $2")
+	stmt, err := r.db.Prepare("SELECT * FROM loans WHERE is_returned = false AND user_id = $1 AND book_id = $2")
 	if err != nil {
 		return false, err
 	}
@@ -39,7 +39,7 @@ func (r *loanRepository) CheckNotReturned(userID int, bookID int) (bool, error) 
 
 // Search searches all books a user borrowed
 func (r *loanRepository) Search(userID int) ([]*entity.Loan, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM loan WHERE user_id = $1")
+	stmt, err := r.db.Prepare("SELECT * FROM loans WHERE user_id = $1")
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (r *loanRepository) BorrowTransaction(u *entity.User, b *entity.Book) error
 		return err
 	}
 
-	_, err = tx.Exec("UPDATE book SET amount = $1 WHERE id = $2", b.Amount, b.ID)
+	_, err = tx.Exec("UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr
@@ -84,7 +84,7 @@ func (r *loanRepository) BorrowTransaction(u *entity.User, b *entity.Book) error
 		return err
 	}
 
-	_, err = tx.Exec("INSERT INTO loan (user_id, book_id) VALUES ($1, $2)", u.ID, b.ID)
+	_, err = tx.Exec("INSERT INTO loans (user_id, book_id) VALUES ($1, $2)", u.ID, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr
@@ -106,7 +106,7 @@ func (r *loanRepository) ReturnTransaction(u *entity.User, b *entity.Book) error
 		return err
 	}
 
-	_, err = tx.Exec("UPDATE book SET amount = $1 WHERE id = $2", b.Amount, b.ID)
+	_, err = tx.Exec("UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr
@@ -114,7 +114,7 @@ func (r *loanRepository) ReturnTransaction(u *entity.User, b *entity.Book) error
 		return err
 	}
 
-	_, err = tx.Exec("UPDATE loan SET is_returned = $1 WHERE user_id = $2 AND book_id = $3", true, u.ID, b.ID)
+	_, err = tx.Exec("UPDATE loans SET is_returned = $1 WHERE user_id = $2 AND book_id = $3", true, u.ID, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr
