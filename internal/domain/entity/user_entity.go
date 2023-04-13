@@ -23,6 +23,7 @@ func NewUser(username, password, email string) (*User, error) {
 		Password:  password,
 		Email:     email,
 		CreatedAt: time.Now(),
+		UpdatedAt: time.Time{},
 	}
 
 	err := user.Validate()

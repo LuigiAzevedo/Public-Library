@@ -21,6 +21,7 @@ func NewBook(title, author string, amount int) (*Book, error) {
 		Author:    author,
 		Amount:    amount,
 		CreatedAt: time.Now(),
+		UpdatedAt: time.Time{},
 	}
 
 	err := book.Validate()
