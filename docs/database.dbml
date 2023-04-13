@@ -5,7 +5,7 @@ Project public_library_v2 {
   '''
 }
 
-Table user as U {
+Table users as U {
   id int [pk, increment]
   username varchar [unique, not null]
   password varchar [not null]
@@ -14,7 +14,7 @@ Table user as U {
   created_at timestamp [not null, default: `now()`]
 }
 
-Table book as B {
+Table books as B {
   id int [pk, increment]
   title varchar [not null]
   author varchar [not null]
@@ -26,7 +26,7 @@ Table book as B {
   }
 }
 
-Table loan {
+Table loans {
   id int [pk, increment]
   user_id int [ref: > U.id, not null]
   book_id int [ref: > B.id, not null]
