@@ -1,7 +1,5 @@
 package errs
 
-import "fmt"
-
 // book errors
 var (
 	ErrUpdateBook = "error has occurred while updating the book"
@@ -23,7 +21,3 @@ var (
 var (
 	ErrBorrowBook = "an error occurred while borrowing the book"
 )
-
-func ErrorWrapper(message string, err error) error {
-	return fmt.Errorf("%s: %w", message, err)
-}
