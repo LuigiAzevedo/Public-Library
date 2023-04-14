@@ -152,7 +152,7 @@ func (r *bookRepository) Update(b *entity.Book) error {
 	if err != nil {
 		return err
 	} else if rowsAffected == 0 {
-		return errors.New("0 rows affected")
+		return errors.New("book not found")
 	}
 
 	return nil
@@ -175,7 +175,7 @@ func (r *bookRepository) Delete(id int) error {
 	if err != nil {
 		return err
 	} else if rowsAffected == 0 {
-		return errors.New("0 rows affected")
+		return errors.New("book not found")
 	}
 
 	return nil
