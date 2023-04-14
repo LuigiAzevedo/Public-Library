@@ -31,8 +31,17 @@ func (s *bookService) GetBook(id int) (*entity.Book, error) {
 	return book, nil
 }
 
-func (s *bookService) SearchBook(query string) ([]*entity.Book, error) {
+func (s *bookService) SearchBooks(query string) ([]*entity.Book, error) {
 	books, err := s.bookRepo.Search(query)
+	if err != nil {
+		return nil, errors.Wrap(err, errs.ErrSearchBook)
+	}
+
+	return books, nil
+}
+
+func (s *bookService) ListBooks() ([]*entity.Book, error) {
+	books, err := s.bookRepo.List()
 	if err != nil {
 		return nil, errors.Wrap(err, errs.ErrSearchBook)
 	}
