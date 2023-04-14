@@ -6,12 +6,12 @@ import (
 )
 
 type Book struct {
-	ID        int       `json:"id"`
-	Title     string    `json:"title"`
-	Author    string    `json:"author"`
-	Amount    int       `json:"amount"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int    `json:"id"`
+	Title     string `json:"title"`
+	Author    string `json:"author"`
+	Amount    int    `json:"amount"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // NewBook creates a new book entity

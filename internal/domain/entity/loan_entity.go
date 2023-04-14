@@ -6,11 +6,11 @@ import (
 )
 
 type Loan struct {
-	ID          int       `json:"id"`
-	UserID      int       `json:"user_id"`
-	BookID      int       `json:"book_id"`
-	Is_returned bool      `json:"is___returned"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          int `json:"id"`
+	UserID      int `json:"user_id"`
+	BookID      int `json:"book_id"`
+	Is_returned bool
+	CreatedAt   time.Time
 }
 
 // NewLoan creates a new loan entity
