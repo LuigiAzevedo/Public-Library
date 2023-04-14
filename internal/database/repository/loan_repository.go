@@ -22,6 +22,9 @@ func NewLoanRepository(db *sql.DB) r.LoanRepository {
 func (r *loanRepository) CheckNotReturned(userID int, bookID int) (bool, error) {
 	stmt, err := r.db.Prepare("SELECT * FROM loans WHERE is_returned = false AND user_id = $1 AND book_id = $2")
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, err
 	}
 	defer stmt.Close()
@@ -31,6 +34,9 @@ func (r *loanRepository) CheckNotReturned(userID int, bookID int) (bool, error) 
 	row := stmt.QueryRow(userID, bookID)
 	err = row.Scan(&l.ID, &l.UserID, &l.BookID, &l.Is_returned, &l.CreatedAt)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, err
 	}
 
