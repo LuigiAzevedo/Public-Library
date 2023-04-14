@@ -10,6 +10,10 @@ Under construction :construction_worker::building_construction::bricks:
 
 - [bcrypt](golang.org/x/crypto) - Password encryption function
 
+- [pq](https://github.com/lib/pq) - Postgres driver
+
+- [chi](https://github.com/go-chi/chi) - lightweight, idiomatic and composable router for building Go HTTP services
+
 ## Tools used
 
 - [Golang](https://go.dev/) - Programming language

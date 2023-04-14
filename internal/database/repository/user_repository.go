@@ -77,7 +77,7 @@ func (r *userRepository) Update(u *entity.User) error {
 	if err != nil {
 		return err
 	} else if rowsAffected == 0 {
-		return errors.New("0 rows affected")
+		return errors.New("user not found")
 	}
 
 	return nil
@@ -100,7 +100,7 @@ func (r *userRepository) Delete(id int) error {
 	if err != nil {
 		return err
 	} else if rowsAffected == 0 {
-		return errors.New("0 rows affected")
+		return errors.New("user not found")
 	}
 
 	return nil

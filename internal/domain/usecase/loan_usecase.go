@@ -15,10 +15,12 @@ type loanService struct {
 	bookRepo r.BookRepository
 }
 
-// NewLoanService creates a new instance of userService
-func NewLoanService(repository r.LoanRepository) u.LoanUsecase {
+// NewLoanService creates a new instance of LoanUsecase
+func NewLoanService(loan r.LoanRepository, user r.UserRepository, book r.BookRepository) u.LoanUsecase {
 	return &loanService{
-		loanRepo: repository,
+		loanRepo: loan,
+		userRepo: user,
+		bookRepo: book,
 	}
 }
 
