@@ -35,13 +35,13 @@ func main() {
 	router := chi.NewRouter()
 
 	userRepo := r.NewUserRepository(db)
-	userUC := u.NewUserService(userRepo)
+	userUC := u.NewUserUseCase(userRepo)
 
 	bookRepo := r.NewBookRepository(db)
-	bookUC := u.NewBookService(bookRepo)
+	bookUC := u.NewBookUseCase(bookRepo)
 
 	loanRepo := r.NewLoanRepository(db)
-	loanUC := u.NewLoanService(loanRepo, userRepo, bookRepo)
+	loanUC := u.NewLoanUseCase(loanRepo, userRepo, bookRepo)
 
 	handler.NewBookHandler(router, bookUC)
 	handler.NewUserHandler(router, userUC)
