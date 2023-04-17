@@ -11,18 +11,18 @@ import (
 	u "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
-type bookService struct {
+type bookUseCase struct {
 	bookRepo r.BookRepository
 }
 
-// NewBookService creates a new instance of bookService
-func NewBookService(repository r.BookRepository) u.BookUsecase {
-	return &bookService{
+// NewBookUseCase creates a new instance of bookUseCase
+func NewBookUseCase(repository r.BookRepository) u.BookUsecase {
+	return &bookUseCase{
 		bookRepo: repository,
 	}
 }
 
-func (s *bookService) GetBook(id int) (*entity.Book, error) {
+func (s *bookUseCase) GetBook(id int) (*entity.Book, error) {
 	book, err := s.bookRepo.Get(id)
 	if err != nil {
 		return nil, errors.Wrap(err, errs.ErrGetBook)
@@ -31,7 +31,7 @@ func (s *bookService) GetBook(id int) (*entity.Book, error) {
 	return book, nil
 }
 
-func (s *bookService) SearchBooks(query string) ([]*entity.Book, error) {
+func (s *bookUseCase) SearchBooks(query string) ([]*entity.Book, error) {
 	books, err := s.bookRepo.Search(query)
 	if err != nil {
 		return nil, errors.Wrap(err, errs.ErrSearchBook)
@@ -40,7 +40,7 @@ func (s *bookService) SearchBooks(query string) ([]*entity.Book, error) {
 	return books, nil
 }
 
-func (s *bookService) ListBooks() ([]*entity.Book, error) {
+func (s *bookUseCase) ListBooks() ([]*entity.Book, error) {
 	books, err := s.bookRepo.List()
 	if err != nil {
 		return nil, errors.Wrap(err, errs.ErrSearchBook)
@@ -49,7 +49,7 @@ func (s *bookService) ListBooks() ([]*entity.Book, error) {
 	return books, nil
 }
 
-func (s *bookService) CreateBook(b *entity.Book) (int, error) {
+func (s *bookUseCase) CreateBook(b *entity.Book) (int, error) {
 	book, err := entity.NewBook(b.Title, b.Author, b.Amount)
 	if err != nil {
 		return 0, errors.Wrap(err, errs.ErrCreateBook)
@@ -63,7 +63,7 @@ func (s *bookService) CreateBook(b *entity.Book) (int, error) {
 	return id, nil
 }
 
-func (s *bookService) UpdateBook(b *entity.Book) error {
+func (s *bookUseCase) UpdateBook(b *entity.Book) error {
 	b.UpdatedAt = time.Now()
 
 	err := b.Validate()
@@ -79,7 +79,7 @@ func (s *bookService) UpdateBook(b *entity.Book) error {
 	return nil
 }
 
-func (s *bookService) DeleteBook(id int) error {
+func (s *bookUseCase) DeleteBook(id int) error {
 	err := s.bookRepo.Delete(id)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrDeleteBook)

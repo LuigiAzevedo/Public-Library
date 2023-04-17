@@ -12,18 +12,18 @@ import (
 	u "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
-type userService struct {
+type userUseCase struct {
 	userRepo r.UserRepository
 }
 
-// NewUserService creates a new instance of userService
-func NewUserService(repository r.UserRepository) u.UserUsecase {
-	return &userService{
+// NewUserUseCase creates a new instance of userUseCase
+func NewUserUseCase(repository r.UserRepository) u.UserUsecase {
+	return &userUseCase{
 		userRepo: repository,
 	}
 }
 
-func (s *userService) GetUser(id int) (*entity.User, error) {
+func (s *userUseCase) GetUser(id int) (*entity.User, error) {
 	user, err := s.userRepo.Get(id)
 	if err != nil {
 		return nil, errors.Wrap(err, errs.ErrGetUser)
@@ -32,7 +32,7 @@ func (s *userService) GetUser(id int) (*entity.User, error) {
 	return user, nil
 }
 
-func (s *userService) CreateUser(u *entity.User) (int, error) {
+func (s *userUseCase) CreateUser(u *entity.User) (int, error) {
 	user, err := entity.NewUser(u.Username, u.Password, u.Email)
 	if err != nil {
 		return 0, errors.Wrap(err, errs.ErrCreateUser)
@@ -53,7 +53,7 @@ func (s *userService) CreateUser(u *entity.User) (int, error) {
 	return id, nil
 }
 
-func (s *userService) UpdateUser(u *entity.User) error {
+func (s *userUseCase) UpdateUser(u *entity.User) error {
 	u.UpdatedAt = time.Now()
 
 	err := u.Validate()
@@ -69,7 +69,7 @@ func (s *userService) UpdateUser(u *entity.User) error {
 	return nil
 }
 
-func (s *userService) DeleteUser(id int) error {
+func (s *userUseCase) DeleteUser(id int) error {
 	err := s.userRepo.Delete(id)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrDeleteUser)

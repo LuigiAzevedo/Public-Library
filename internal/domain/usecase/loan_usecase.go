@@ -9,22 +9,22 @@ import (
 	u "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
-type loanService struct {
+type loanUseCase struct {
 	loanRepo r.LoanRepository
 	userRepo r.UserRepository
 	bookRepo r.BookRepository
 }
 
-// NewLoanService creates a new instance of LoanUsecase
-func NewLoanService(loan r.LoanRepository, user r.UserRepository, book r.BookRepository) u.LoanUsecase {
-	return &loanService{
+// NewLoanUseCase creates a new instance of loanUseCase
+func NewLoanUseCase(loan r.LoanRepository, user r.UserRepository, book r.BookRepository) u.LoanUsecase {
+	return &loanUseCase{
 		loanRepo: loan,
 		userRepo: user,
 		bookRepo: book,
 	}
 }
 
-func (s *loanService) BorrowBook(userID, bookID int) error {
+func (s *loanUseCase) BorrowBook(userID, bookID int) error {
 	exists, err := s.loanRepo.CheckNotReturned(userID, bookID)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrBorrowBook)
@@ -56,7 +56,7 @@ func (s *loanService) BorrowBook(userID, bookID int) error {
 	return nil
 }
 
-func (s *loanService) ReturnBook(userID, bookID int) error {
+func (s *loanUseCase) ReturnBook(userID, bookID int) error {
 	exists, err := s.loanRepo.CheckNotReturned(userID, bookID)
 	if err != nil {
 		return err
@@ -79,13 +79,13 @@ func (s *loanService) ReturnBook(userID, bookID int) error {
 
 	err = s.loanRepo.ReturnTransaction(user, book)
 	if err != nil {
-		return errors.Wrap(err, "an error occurred while returning the book")
+		return errors.Wrap(err, errs.ErrReturnBook)
 	}
 
 	return nil
 }
 
-func (s *loanService) SearchUserLoans(userID int) ([]*entity.Loan, error) {
+func (s *loanUseCase) SearchUserLoans(userID int) ([]*entity.Loan, error) {
 	loans, err := s.loanRepo.Search(userID)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while searching loans")
