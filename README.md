@@ -12,7 +12,11 @@ Under construction :construction_worker::building_construction::bricks:
 
 - [pq](https://github.com/lib/pq) - Postgres driver
 
-- [chi](https://github.com/go-chi/chi) - lightweight, idiomatic and composable router for building Go HTTP services
+- [chi](https://github.com/go-chi/chi) - Lightweight, idiomatic and composable router for building Go HTTP services
+
+- [zerolog](https://github.com/rs/zerolog) - A fast and simple logger
+
+- [httplog](https://github.com/go-chi/httplog) - Small but powerful structured logging package for HTTP request logging in Go.
 
 ## Tools used
 
