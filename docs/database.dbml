@@ -30,7 +30,7 @@ Table loans {
   id int [pk, increment]
   user_id int [ref: > U.id, not null]
   book_id int [ref: > B.id, not null]
-  is_returned boolean [not null]
+  is_returned boolean [not null, default: false]
   created_at timestamp [not null, default: `now()`]
     Indexes {
     user_id
