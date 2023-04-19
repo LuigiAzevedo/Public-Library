@@ -84,7 +84,7 @@ func (r *bookRepository) List() ([]*entity.Book, error) {
 
 // Search searches books matching the sent query
 func (r *bookRepository) Search(query string) ([]*entity.Book, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM books WHERE title LIKE $1")
+	stmt, err := r.db.Prepare("SELECT * FROM books WHERE LOWER(title) LIKE LOWER($1)")
 	if err != nil {
 		return nil, err
 	}
