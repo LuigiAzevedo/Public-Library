@@ -31,3 +31,5 @@ Under construction :construction_worker::building_construction::bricks:
 - [Migrate](https://github.com/golang-migrate/migrate) - Database migrations
 
 - [Golangci-lint](https://github.com/golangci/golangci-lint) - Automated code checking for programmatic and stylistic errors
+
+- [dbdocs](https://dbdocs.io/?utm_source=dbdocs) - A free & simple tool to create web-based database documentation using DSL code.
