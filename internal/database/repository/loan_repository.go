@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
@@ -19,8 +20,8 @@ func NewLoanRepository(db *sql.DB) r.LoanRepository {
 }
 
 // CheckNotReturned verify if a loan not returned exists in the database
-func (r *loanRepository) CheckNotReturned(userID int, bookID int) (bool, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM loans WHERE is_returned = false AND user_id = $1 AND book_id = $2")
+func (r *loanRepository) CheckNotReturned(ctx context.Context, userID int, bookID int) (bool, error) {
+	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM loans WHERE is_returned = false AND user_id = $1 AND book_id = $2")
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil
@@ -31,7 +32,7 @@ func (r *loanRepository) CheckNotReturned(userID int, bookID int) (bool, error) 
 
 	l := &entity.Loan{}
 
-	row := stmt.QueryRow(userID, bookID)
+	row := stmt.QueryRowContext(ctx, userID, bookID)
 	err = row.Scan(&l.ID, &l.UserID, &l.BookID, &l.Is_returned, &l.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -44,14 +45,14 @@ func (r *loanRepository) CheckNotReturned(userID int, bookID int) (bool, error) 
 }
 
 // Search searches all books a user borrowed
-func (r *loanRepository) Search(userID int) ([]*entity.Loan, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM loans WHERE user_id = $1")
+func (r *loanRepository) Search(ctx context.Context, userID int) ([]*entity.Loan, error) {
+	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM loans WHERE user_id = $1")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(userID)
+	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,13 +77,13 @@ func (r *loanRepository) Search(userID int) ([]*entity.Loan, error) {
 }
 
 // BorrowTransaction borrows a book updating the book amount and creating a new loan
-func (r *loanRepository) BorrowTransaction(u *entity.User, b *entity.Book) error {
+func (r *loanRepository) BorrowTransaction(ctx context.Context, u *entity.User, b *entity.Book) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec("UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
+	_, err = tx.ExecContext(ctx, "UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr
@@ -90,7 +91,7 @@ func (r *loanRepository) BorrowTransaction(u *entity.User, b *entity.Book) error
 		return err
 	}
 
-	_, err = tx.Exec("INSERT INTO loans (user_id, book_id) VALUES ($1, $2)", u.ID, b.ID)
+	_, err = tx.ExecContext(ctx, "INSERT INTO loans (user_id, book_id) VALUES ($1, $2)", u.ID, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr
@@ -106,13 +107,13 @@ func (r *loanRepository) BorrowTransaction(u *entity.User, b *entity.Book) error
 }
 
 // ReturnTransaction returns a book updating the book amount and updating the existing loan
-func (r *loanRepository) ReturnTransaction(u *entity.User, b *entity.Book) error {
+func (r *loanRepository) ReturnTransaction(ctx context.Context, u *entity.User, b *entity.Book) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec("UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
+	_, err = tx.ExecContext(ctx, "UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr
@@ -120,7 +121,7 @@ func (r *loanRepository) ReturnTransaction(u *entity.User, b *entity.Book) error
 		return err
 	}
 
-	_, err = tx.Exec("UPDATE loans SET is_returned = $1 WHERE user_id = $2 AND book_id = $3", true, u.ID, b.ID)
+	_, err = tx.ExecContext(ctx, "UPDATE loans SET is_returned = $1 WHERE user_id = $2 AND book_id = $3", true, u.ID, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return rbErr

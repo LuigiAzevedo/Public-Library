@@ -1,10 +1,14 @@
 package ports
 
-import "github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+)
 
 type UserUsecase interface {
-	GetUser(id int) (*entity.User, error)
-	CreateUser(u *entity.User) (int, error)
-	UpdateUser(u *entity.User) error
-	DeleteUser(id int) error
+	GetUser(ctx context.Context, id int) (*entity.User, error)
+	CreateUser(ctx context.Context, u *entity.User) (int, error)
+	UpdateUser(ctx context.Context, u *entity.User) error
+	DeleteUser(ctx context.Context, id int) error
 }

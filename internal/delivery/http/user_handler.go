@@ -37,9 +37,15 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.UserUsecase.GetUser(id)
+	ctx := r.Context()
+	u, err := h.UserUsecase.GetUser(ctx, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 		return
 	}
 
@@ -55,9 +61,15 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.UserUsecase.CreateUser(u)
+	ctx := r.Context()
+	id, err := h.UserUsecase.CreateUser(ctx, u)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -80,15 +92,22 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.UserUsecase.UpdateUser(u)
+	ctx := r.Context()
+	err = h.UserUsecase.UpdateUser(ctx, u)
 	if err != nil {
-		if errors.Cause(err).Error() == "user not found" {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			if errors.Cause(err).Error() == "user not found" {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			} else {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -101,7 +120,8 @@ func (h *userHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.UserUsecase.DeleteUser(id)
+	ctx := r.Context()
+	err = h.UserUsecase.DeleteUser(ctx, id)
 	if err != nil {
 		if errors.Cause(err).Error() == "user not found" {
 			http.Error(w, err.Error(), http.StatusNotFound)

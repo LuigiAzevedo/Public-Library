@@ -1,10 +1,14 @@
 package ports
 
-import "github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+)
 
 type UserRepository interface {
-	Get(id int) (*entity.User, error)
-	Create(u *entity.User) (int, error)
-	Update(u *entity.User) error
-	Delete(id int) error
+	Get(ctx context.Context, id int) (*entity.User, error)
+	Create(ctx context.Context, u *entity.User) (int, error)
+	Update(ctx context.Context, u *entity.User) error
+	Delete(ctx context.Context, id int) error
 }

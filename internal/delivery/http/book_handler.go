@@ -39,9 +39,15 @@ func (h *bookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := h.BookUsecase.GetBook(id)
+	ctx := r.Context()
+	b, err := h.BookUsecase.GetBook(ctx, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 		return
 	}
 
@@ -63,15 +69,21 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	ctx := r.Context()
 	var b []*entity.Book
 	if req.Title == "" {
-		b, err = h.BookUsecase.ListBooks()
+		b, err = h.BookUsecase.ListBooks(ctx)
 	} else {
-		b, err = h.BookUsecase.SearchBooks(req.Title)
+		b, err = h.BookUsecase.SearchBooks(ctx, req.Title)
 	}
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 		return
 	}
 
@@ -87,9 +99,15 @@ func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.BookUsecase.CreateBook(b)
+	ctx := r.Context()
+	id, err := h.BookUsecase.CreateBook(ctx, b)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -112,15 +130,20 @@ func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.BookUsecase.UpdateBook(b)
+	ctx := r.Context()
+	err = h.BookUsecase.UpdateBook(ctx, b)
 	if err != nil {
-		if errors.Cause(err).Error() == "book not found" {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			if errors.Cause(err).Error() == "book not found" {
+				http.Error(w, err.Error(), http.StatusNotFound)
+			} else {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 		}
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -133,15 +156,16 @@ func (h *bookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.BookUsecase.DeleteBook(id)
+	ctx := r.Context()
+	err = h.BookUsecase.DeleteBook(ctx, id)
 	if err != nil {
-		if errors.Cause(err).Error() == "book not found" {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		} else {
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
 		}
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
