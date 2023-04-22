@@ -1,12 +1,16 @@
 package ports
 
-import "github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+)
 
 type BookRepository interface {
-	Get(id int) (*entity.Book, error)
-	List() ([]*entity.Book, error)
-	Search(query string) ([]*entity.Book, error)
-	Create(b *entity.Book) (int, error)
-	Update(b *entity.Book) error
-	Delete(id int) error
+	Get(ctx context.Context, id int) (*entity.Book, error)
+	List(ctx context.Context) ([]*entity.Book, error)
+	Search(ctx context.Context, query string) ([]*entity.Book, error)
+	Create(ctx context.Context, b *entity.Book) (int, error)
+	Update(ctx context.Context, b *entity.Book) error
+	Delete(ctx context.Context, id int) error
 }

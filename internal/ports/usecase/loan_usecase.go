@@ -1,9 +1,13 @@
 package ports
 
-import "github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+)
 
 type LoanUsecase interface {
-	BorrowBook(userID, bookID int) error
-	ReturnBook(userID, bookID int) error
-	SearchUserLoans(userID int) ([]*entity.Loan, error)
+	BorrowBook(ctx context.Context, userID, bookID int) error
+	ReturnBook(ctx context.Context, userID, bookID int) error
+	SearchUserLoans(ctx context.Context, userID int) ([]*entity.Loan, error)
 }

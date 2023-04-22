@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
@@ -20,8 +21,8 @@ func NewUserRepository(db *sql.DB) r.UserRepository {
 }
 
 // Get gets user info by id
-func (r *userRepository) Get(id int) (*entity.User, error) {
-	stmt, err := r.db.Prepare("SELECT * FROM users WHERE id = $1")
+func (r *userRepository) Get(ctx context.Context, id int) (*entity.User, error) {
+	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM users WHERE id = $1")
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +30,7 @@ func (r *userRepository) Get(id int) (*entity.User, error) {
 
 	u := &entity.User{}
 
-	row := stmt.QueryRow(id)
+	row := stmt.QueryRowContext(ctx, id)
 
 	var updatedAt sql.NullTime
 	err = row.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &updatedAt, &u.CreatedAt)
@@ -45,14 +46,14 @@ func (r *userRepository) Get(id int) (*entity.User, error) {
 }
 
 // Create creates a new user
-func (r *userRepository) Create(u *entity.User) (int, error) {
-	stmt, err := r.db.Prepare("INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING id")
+func (r *userRepository) Create(ctx context.Context, u *entity.User) (int, error) {
+	stmt, err := r.db.PrepareContext(ctx, "INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING id")
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(u.Username, u.Password, u.Email).Scan(&u.ID)
+	err = stmt.QueryRowContext(ctx, u.Username, u.Password, u.Email).Scan(&u.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -61,14 +62,14 @@ func (r *userRepository) Create(u *entity.User) (int, error) {
 }
 
 // Update updates an user
-func (r *userRepository) Update(u *entity.User) error {
-	stmt, err := r.db.Prepare("UPDATE users SET username = $1, password = $2, email = $3, updated_at = $4 WHERE id = $5")
+func (r *userRepository) Update(ctx context.Context, u *entity.User) error {
+	stmt, err := r.db.PrepareContext(ctx, "UPDATE users SET username = $1, password = $2, email = $3, updated_at = $4 WHERE id = $5")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	result, err := stmt.Exec(u.Username, u.Password, u.Email, u.UpdatedAt, u.ID)
+	result, err := stmt.ExecContext(ctx, u.Username, u.Password, u.Email, u.UpdatedAt, u.ID)
 	if err != nil {
 		return err
 	}
@@ -84,14 +85,14 @@ func (r *userRepository) Update(u *entity.User) error {
 }
 
 // Delete deletes an user by id
-func (r *userRepository) Delete(id int) error {
-	stmt, err := r.db.Prepare("DELETE FROM users WHERE id = $1")
+func (r *userRepository) Delete(ctx context.Context, id int) error {
+	stmt, err := r.db.PrepareContext(ctx, "DELETE FROM users WHERE id = $1")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	result, err := stmt.Exec(id)
+	result, err := stmt.ExecContext(ctx, id)
 	if err != nil {
 		return err
 	}

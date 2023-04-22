@@ -36,9 +36,15 @@ func (h *loanHandler) SearchUserLoans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.LoanUsecase.SearchUserLoans(id)
+	ctx := r.Context()
+	u, err := h.LoanUsecase.SearchUserLoans(ctx, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 		return
 	}
 
@@ -60,9 +66,15 @@ func (h *loanHandler) BorrowBook(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err := h.LoanUsecase.BorrowBook(req.UserID, req.BookID)
+	ctx := r.Context()
+	err := h.LoanUsecase.BorrowBook(ctx, req.UserID, req.BookID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 		return
 	}
 
@@ -79,9 +91,15 @@ func (h *loanHandler) ReturnBook(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err := h.LoanUsecase.ReturnBook(req.UserID, req.BookID)
+	ctx := r.Context()
+	err := h.LoanUsecase.ReturnBook(ctx, req.UserID, req.BookID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		select {
+		case <-ctx.Done():
+			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+		default:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 		return
 	}
 

@@ -1,12 +1,16 @@
 package ports
 
-import "github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+)
 
 type BookUsecase interface {
-	GetBook(id int) (*entity.Book, error)
-	ListBooks() ([]*entity.Book, error)
-	SearchBooks(query string) ([]*entity.Book, error)
-	CreateBook(b *entity.Book) (int, error)
-	UpdateBook(b *entity.Book) error
-	DeleteBook(id int) error
+	GetBook(ctx context.Context, id int) (*entity.Book, error)
+	ListBooks(ctx context.Context) ([]*entity.Book, error)
+	SearchBooks(ctx context.Context, query string) ([]*entity.Book, error)
+	CreateBook(ctx context.Context, b *entity.Book) (int, error)
+	UpdateBook(ctx context.Context, b *entity.Book) error
+	DeleteBook(ctx context.Context, id int) error
 }

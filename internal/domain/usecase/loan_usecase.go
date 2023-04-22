@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
@@ -24,8 +26,8 @@ func NewLoanUseCase(loan r.LoanRepository, user r.UserRepository, book r.BookRep
 	}
 }
 
-func (s *loanUseCase) BorrowBook(userID, bookID int) error {
-	exists, err := s.loanRepo.CheckNotReturned(userID, bookID)
+func (s *loanUseCase) BorrowBook(ctx context.Context, userID, bookID int) error {
+	exists, err := s.loanRepo.CheckNotReturned(ctx, userID, bookID)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrBorrowBook)
 	}
@@ -33,12 +35,12 @@ func (s *loanUseCase) BorrowBook(userID, bookID int) error {
 		return errors.New("return the book first before borrowing it again")
 	}
 
-	user, err := s.userRepo.Get(userID)
+	user, err := s.userRepo.Get(ctx, userID)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrGetUser)
 	}
 
-	book, err := s.bookRepo.Get(bookID)
+	book, err := s.bookRepo.Get(ctx, bookID)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrGetBook)
 	}
@@ -48,7 +50,7 @@ func (s *loanUseCase) BorrowBook(userID, bookID int) error {
 		return errors.New("book unavailable at the moment")
 	}
 
-	err = s.loanRepo.BorrowTransaction(user, book)
+	err = s.loanRepo.BorrowTransaction(ctx, user, book)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrBorrowBook)
 	}
@@ -56,8 +58,8 @@ func (s *loanUseCase) BorrowBook(userID, bookID int) error {
 	return nil
 }
 
-func (s *loanUseCase) ReturnBook(userID, bookID int) error {
-	exists, err := s.loanRepo.CheckNotReturned(userID, bookID)
+func (s *loanUseCase) ReturnBook(ctx context.Context, userID, bookID int) error {
+	exists, err := s.loanRepo.CheckNotReturned(ctx, userID, bookID)
 	if err != nil {
 		return err
 	}
@@ -65,28 +67,28 @@ func (s *loanUseCase) ReturnBook(userID, bookID int) error {
 		return errors.New("loan does't exists or already returned")
 	}
 
-	user, err := s.userRepo.Get(userID)
+	user, err := s.userRepo.Get(ctx, userID)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrGetUser)
 	}
 
-	book, err := s.bookRepo.Get(bookID)
+	book, err := s.bookRepo.Get(ctx, bookID)
 	if err != nil {
 		return errors.Wrap(err, errs.ErrGetBook)
 	}
 
 	book.Amount += 1
 
-	err = s.loanRepo.ReturnTransaction(user, book)
+	err = s.loanRepo.ReturnTransaction(ctx, user, book)
 	if err != nil {
-		return errors.Wrap(err, errs.ErrReturnBook)
+		return errors.Wrap(err, "an error occurred while returning a book")
 	}
 
 	return nil
 }
 
-func (s *loanUseCase) SearchUserLoans(userID int) ([]*entity.Loan, error) {
-	loans, err := s.loanRepo.Search(userID)
+func (s *loanUseCase) SearchUserLoans(ctx context.Context, userID int) ([]*entity.Loan, error) {
+	loans, err := s.loanRepo.Search(ctx, userID)
 	if err != nil {
 		return nil, errors.Wrap(err, "an error occurred while searching loans")
 	}

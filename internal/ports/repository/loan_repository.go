@@ -1,10 +1,14 @@
 package ports
 
-import "github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+)
 
 type LoanRepository interface {
-	CheckNotReturned(userID, bookID int) (bool, error)
-	Search(userID int) ([]*entity.Loan, error)
-	BorrowTransaction(*entity.User, *entity.Book) error
-	ReturnTransaction(*entity.User, *entity.Book) error
+	CheckNotReturned(ctx context.Context, userID, bookID int) (bool, error)
+	Search(ctx context.Context, userID int) ([]*entity.Loan, error)
+	BorrowTransaction(ctx context.Context, u *entity.User, b *entity.Book) error
+	ReturnTransaction(ctx context.Context, u *entity.User, b *entity.Book) error
 }
