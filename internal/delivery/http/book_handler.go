@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -8,8 +9,10 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	uc "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
@@ -17,7 +20,7 @@ type bookHandler struct {
 	BookUsecase uc.BookUsecase
 }
 
-// NewbookHandler creates a new instance of bookHandler
+// NewBookHandler creates a new instance of bookHandler
 func NewBookHandler(r *chi.Mux, useCase uc.BookUsecase) {
 	handler := &bookHandler{
 		BookUsecase: useCase,
@@ -35,23 +38,37 @@ func NewBookHandler(r *chi.Mux, useCase uc.BookUsecase) {
 func (h *bookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "invalid book ID", http.StatusBadRequest)
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidBookID, http.StatusBadRequest)
 		return
 	}
 
 	ctx := r.Context()
 	b, err := h.BookUsecase.GetBook(ctx, id)
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			if errors.Is(err, sql.ErrNoRows) {
+				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			} else {
+				http.Error(w, errs.ErrGetBook, http.StatusInternalServerError)
+			}
 		}
 		return
 	}
 
-	json.NewEncoder(w).Encode(b)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(b); err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrGetBook, http.StatusInternalServerError)
+		return
+	}
 }
 
 type SearchBookRequest struct {
@@ -62,11 +79,10 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 	var req SearchBookRequest
 
 	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		if !errors.Is(err, io.EOF) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+	if err != nil && !errors.Is(err, io.EOF) {
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrWrongBodyTitle, http.StatusBadRequest)
+		return
 	}
 
 	ctx := r.Context()
@@ -78,16 +94,29 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			if errors.Is(err, sql.ErrNoRows) {
+				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			} else {
+				http.Error(w, errs.ErrSearchBook, http.StatusInternalServerError)
+			}
 		}
 		return
 	}
 
-	json.NewEncoder(w).Encode(b)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(b); err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrSearchBook, http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
@@ -95,24 +124,33 @@ func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
 	ctx := r.Context()
 	id, err := h.BookUsecase.CreateBook(ctx, b)
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, errs.ErrCreateBook, http.StatusInternalServerError)
 		}
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]int{"id": id})
+
+	if err := json.NewEncoder(w).Encode(map[string]int{"id": id}); err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrCreateBook, http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
@@ -120,27 +158,31 @@ func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
 	b.ID, err = strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "invalid book ID", http.StatusBadRequest)
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidBookID, http.StatusBadRequest)
 		return
 	}
 
 	ctx := r.Context()
 	err = h.BookUsecase.UpdateBook(ctx, b)
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Cause(err).Error() == "book not found" {
-				http.Error(w, err.Error(), http.StatusNotFound)
+			if errors.Cause(err).Error() == errs.ErrBookNotFound {
+				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Error(w, errs.ErrUpdateBook, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -152,18 +194,25 @@ func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 func (h *bookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "invalid book ID", http.StatusBadRequest)
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidBookID, http.StatusBadRequest)
 		return
 	}
 
 	ctx := r.Context()
 	err = h.BookUsecase.DeleteBook(ctx, id)
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			if errors.Cause(err).Error() == errs.ErrBookNotFound {
+				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			} else {
+				http.Error(w, errs.ErrDeleteBook, http.StatusInternalServerError)
+			}
 		}
 		return
 	}
