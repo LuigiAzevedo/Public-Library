@@ -32,7 +32,7 @@ func (s *loanUseCase) BorrowBook(ctx context.Context, userID, bookID int) error 
 		return errors.Wrap(err, errs.ErrBorrowBook)
 	}
 	if exists {
-		return errors.New("return the book first before borrowing it again")
+		return errors.New(errs.ErrReturnBookFirst)
 	}
 
 	user, err := s.userRepo.Get(ctx, userID)
@@ -47,7 +47,7 @@ func (s *loanUseCase) BorrowBook(ctx context.Context, userID, bookID int) error 
 
 	book.Amount -= 1
 	if book.Amount < 0 {
-		return errors.New("book unavailable at the moment")
+		return errors.New(errs.ErrBookUnavailable)
 	}
 
 	err = s.loanRepo.BorrowTransaction(ctx, user, book)
@@ -64,7 +64,7 @@ func (s *loanUseCase) ReturnBook(ctx context.Context, userID, bookID int) error 
 		return err
 	}
 	if !exists {
-		return errors.New("loan does't exists or already returned")
+		return errors.New(errs.ErrLoanAlreadyReturned)
 	}
 
 	user, err := s.userRepo.Get(ctx, userID)
