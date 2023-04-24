@@ -1,14 +1,18 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	uc "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
@@ -32,23 +36,37 @@ func NewLoanHandler(r *chi.Mux, useCase uc.LoanUsecase) {
 func (h *loanHandler) SearchUserLoans(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "invalid user ID", http.StatusBadRequest)
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidUserID, http.StatusBadRequest)
 		return
 	}
 
 	ctx := r.Context()
-	u, err := h.LoanUsecase.SearchUserLoans(ctx, id)
+	l, err := h.LoanUsecase.SearchUserLoans(ctx, id)
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			if errors.Is(err, sql.ErrNoRows) {
+				http.Error(w, errs.ErrNoLoansFound, http.StatusNotFound)
+			} else {
+				http.Error(w, errs.ErrSearchUserLoans, http.StatusInternalServerError)
+			}
 		}
 		return
 	}
 
-	json.NewEncoder(w).Encode(u)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(l); err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrSearchUserLoans, http.StatusInternalServerError)
+		return
+	}
 }
 
 type LoanRequest struct {
@@ -59,21 +77,36 @@ type LoanRequest struct {
 func (h *loanHandler) BorrowBook(w http.ResponseWriter, r *http.Request) {
 	var req LoanRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		if !errors.Is(err, io.EOF) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil && !errors.Is(err, io.EOF) {
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		return
 	}
 
 	ctx := r.Context()
-	err := h.LoanUsecase.BorrowBook(ctx, req.UserID, req.BookID)
+	err = h.LoanUsecase.BorrowBook(ctx, req.UserID, req.BookID)
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			error := strings.Split(err.Error(), ":")
+			switch error[0] {
+			case errs.ErrGetBook:
+				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			case errs.ErrGetUser:
+				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
+			case errs.ErrReturnBookFirst:
+				http.Error(w, errs.ErrReturnBookFirst, http.StatusBadRequest)
+			case errs.ErrBookUnavailable:
+				http.Error(w, errs.ErrBookUnavailable, http.StatusNotFound)
+
+			default:
+				http.Error(w, errs.ErrBorrowBook, http.StatusInternalServerError)
+			}
 		}
 		return
 	}
@@ -84,21 +117,28 @@ func (h *loanHandler) BorrowBook(w http.ResponseWriter, r *http.Request) {
 func (h *loanHandler) ReturnBook(w http.ResponseWriter, r *http.Request) {
 	var req LoanRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		if !errors.Is(err, io.EOF) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+	err := json.NewDecoder(r.Body).Decode(&req)
+
+	if err != nil && !errors.Is(err, io.EOF) {
+		log.Error().Msg(err.Error())
+		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		return
 	}
 
 	ctx := r.Context()
-	err := h.LoanUsecase.ReturnBook(ctx, req.UserID, req.BookID)
+	err = h.LoanUsecase.ReturnBook(ctx, req.UserID, req.BookID)
 	if err != nil {
+		log.Error().Msg(err.Error())
+
 		select {
 		case <-ctx.Done():
-			http.Error(w, "request timed out", http.StatusGatewayTimeout)
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, err.Error(), http.StatusNotFound)
+			if err.Error() == errs.ErrLoanAlreadyReturned {
+				http.Error(w, errs.ErrLoanAlreadyReturned, http.StatusNotFound)
+			} else {
+				http.Error(w, errs.ErrReturnBook, http.StatusInternalServerError)
+			}
 		}
 		return
 	}

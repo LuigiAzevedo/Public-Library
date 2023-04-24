@@ -80,6 +80,10 @@ func (r *bookRepository) List(ctx context.Context) ([]*entity.Book, error) {
 		return nil, err
 	}
 
+	if books == nil {
+		return nil, sql.ErrNoRows
+	}
+
 	return books, nil
 }
 
@@ -115,6 +119,10 @@ func (r *bookRepository) Search(ctx context.Context, query string) ([]*entity.Bo
 
 	if err = rows.Err(); err != nil {
 		return nil, err
+	}
+
+	if books == nil {
+		return nil, sql.ErrNoRows
 	}
 
 	return books, nil

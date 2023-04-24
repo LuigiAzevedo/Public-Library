@@ -73,6 +73,10 @@ func (r *loanRepository) Search(ctx context.Context, userID int) ([]*entity.Loan
 		return nil, err
 	}
 
+	if loans == nil {
+		return nil, sql.ErrNoRows
+	}
+
 	return loans, nil
 }
 
