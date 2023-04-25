@@ -8,6 +8,8 @@ Under construction :construction_worker::building_construction::bricks:
 
 ## Dependencies
 
+- [Testify](https://github.com/stretchr/testify) - Tools for code testing
+
 - [bcrypt](golang.org/x/crypto) - Password encryption function
 
 - [pq](https://github.com/lib/pq) - Postgres driver
