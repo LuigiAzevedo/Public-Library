@@ -19,3 +19,6 @@ jobs:
 
       - name: Build
         run: go build -o bin/app cmd/main.go
+
+      - name: Test
+        run: go test ./...
