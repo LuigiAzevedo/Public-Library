@@ -26,3 +26,7 @@ tasks:
     deps: [build]
     cmds:
       - ./bin/app
+  test:
+    desc: Run all tests ignoring cache
+    cmds:
+      - go test -cover -v ./... -count=1
