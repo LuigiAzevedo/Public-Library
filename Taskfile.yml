@@ -17,3 +17,12 @@ tasks:
     desc: Check code for programmatic and stylistic errors
     cmds:
       - golangci-lint run
+  build:
+    desc: Compile code
+    cmds:
+      - go build -o bin/app cmd/main.go
+  run:
+    desc: Run compiled compiled
+    deps: [build]
+    cmds:
+      - ./bin/app
