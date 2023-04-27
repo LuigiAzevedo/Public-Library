@@ -63,13 +63,13 @@ func (r *userRepository) Create(ctx context.Context, u *entity.User) (int, error
 
 // Update updates an user
 func (r *userRepository) Update(ctx context.Context, u *entity.User) error {
-	stmt, err := r.db.PrepareContext(ctx, "UPDATE users SET username = $1, password = $2, email = $3, updated_at = $4 WHERE id = $5")
+	stmt, err := r.db.PrepareContext(ctx, "UPDATE users SET username = $1, password = $2, email = $3, updated_at = NOW() WHERE id = $4")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	result, err := stmt.ExecContext(ctx, u.Username, u.Password, u.Email, u.UpdatedAt, u.ID)
+	result, err := stmt.ExecContext(ctx, u.Username, u.Password, u.Email, u.ID)
 	if err != nil {
 		return err
 	}
