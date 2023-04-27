@@ -20,6 +20,8 @@ Under construction :construction_worker::building_construction::bricks:
 
 - [httplog](https://github.com/go-chi/httplog) - Small but powerful structured logging package for HTTP request logging in Go.
 
+- [sqlmock](https://github.com/DATA-DOG/go-sqlmock) - Simulate any sql driver behavior in tests
+
 ## Tools used
 
 - [Golang](https://go.dev/) - Programming language
