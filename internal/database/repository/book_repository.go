@@ -146,13 +146,13 @@ func (r *bookRepository) Create(ctx context.Context, b *entity.Book) (int, error
 
 // Update updates a book
 func (r *bookRepository) Update(ctx context.Context, b *entity.Book) error {
-	stmt, err := r.db.PrepareContext(ctx, "UPDATE books SET title = $1, author = $2, amount = $3, updated_at = $4 WHERE id = $5")
+	stmt, err := r.db.PrepareContext(ctx, "UPDATE books SET title = $1, author = $2, amount = $3, updated_at = NOW() WHERE id = $4")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	result, err := stmt.ExecContext(ctx, b.Title, b.Author, b.Amount, b.UpdatedAt, b.ID)
+	result, err := stmt.ExecContext(ctx, b.Title, b.Author, b.Amount, b.ID)
 	if err != nil {
 		return err
 	}
