@@ -12,7 +12,7 @@ import (
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
 )
 
-func TestGet(t *testing.T) {
+func TestGetUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
@@ -66,7 +66,7 @@ func TestGet(t *testing.T) {
 	})
 }
 
-func TestCreate(t *testing.T) {
+func TestCreateUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
@@ -117,7 +117,7 @@ func TestCreate(t *testing.T) {
 	})
 }
 
-func TestUpdate(t *testing.T) {
+func TestUpdateUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
@@ -177,7 +177,7 @@ func TestUpdate(t *testing.T) {
 	})
 }
 
-func TestDelete(t *testing.T) {
+func TestDeleteUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
