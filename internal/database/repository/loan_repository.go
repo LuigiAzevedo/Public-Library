@@ -23,9 +23,6 @@ func NewLoanRepository(db *sql.DB) r.LoanRepository {
 func (r *loanRepository) CheckNotReturned(ctx context.Context, userID int, bookID int) (bool, error) {
 	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM loans WHERE is_returned = false AND user_id = $1 AND book_id = $2")
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
 		return false, err
 	}
 	defer stmt.Close()
