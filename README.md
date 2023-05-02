@@ -22,6 +22,8 @@ Under construction :construction_worker::building_construction::bricks:
 
 - [sqlmock](https://github.com/DATA-DOG/go-sqlmock) - Simulate any sql driver behavior in tests
 
+- [Gomock](https://github.com/golang/mock) - Mocking framework
+
 ## Tools used
 
 - [Golang](https://go.dev/) - Programming language

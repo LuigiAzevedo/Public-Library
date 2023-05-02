@@ -6,6 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/httplog v0.3.0
+	github.com/golang/mock v1.4.4
 	github.com/lib/pq v1.10.7
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.1
