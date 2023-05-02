@@ -30,3 +30,10 @@ tasks:
     desc: Run all tests ignoring cache
     cmds:
       - go test -cover -v ./... -count=1
+  mock:
+    desc: Generate mock from interface
+    cmds:
+      - |
+        ~/go/bin/mockgen -source=internal/ports/usecase/user_usecase.go -destination=internal/mock/user_usecase.go -package=mock
+        ~/go/bin/mockgen -source=internal/ports/usecase/book_usecase.go -destination=internal/mock/book_usecase.go -package=mock
+        ~/go/bin/mockgen -source=internal/ports/usecase/loan_usecase.go -destination=internal/mock/loan_usecase.go -package=mock

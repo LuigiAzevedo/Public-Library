@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/domain/usecase/mock"
+	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
 func TestGetUser(t *testing.T) {
