@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LuigiAzevedo/public-library-v2/internal/domain/usecase/mock"
+	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
 func TestBorrowBook(t *testing.T) {
