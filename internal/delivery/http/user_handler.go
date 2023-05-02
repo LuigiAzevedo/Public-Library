@@ -137,6 +137,8 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 			if errors.Cause(err).Error() == errs.ErrUserNotFound {
 				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
 				return
+			} else if strings.Contains(errors.Cause(err).Error(), "duplicate key value") {
+				http.Error(w, errs.ErrAlreadyExists, http.StatusBadRequest)
 			} else {
 				http.Error(w, errs.ErrUpdateUser, http.StatusInternalServerError)
 				return
@@ -161,12 +163,17 @@ func (h *userHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 
-		if errors.Cause(err).Error() == errs.ErrUserNotFound {
-			http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
-			return
-		} else {
-			http.Error(w, errs.ErrDeleteUser, http.StatusInternalServerError)
-			return
+		select {
+		case <-ctx.Done():
+			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+		default:
+			if errors.Cause(err).Error() == errs.ErrUserNotFound {
+				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
+				return
+			} else {
+				http.Error(w, errs.ErrDeleteUser, http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 
