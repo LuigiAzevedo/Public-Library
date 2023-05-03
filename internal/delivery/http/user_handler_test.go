@@ -27,8 +27,8 @@ func TestGetUser(t *testing.T) {
 	}{
 		"OK": {
 			ID: 1,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Eq(1)).
 					Times(1).
 					Return(&entity.User{}, nil)
@@ -39,8 +39,8 @@ func TestGetUser(t *testing.T) {
 		},
 		"Invalid URL Param": {
 			ID: "ID",
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -50,8 +50,8 @@ func TestGetUser(t *testing.T) {
 		},
 		"Not Found": {
 			ID: 0,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(nil, sql.ErrNoRows)
@@ -62,8 +62,8 @@ func TestGetUser(t *testing.T) {
 		},
 		"Unexpected Error": {
 			ID: 1,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(nil, sql.ErrConnDone)
@@ -79,8 +79,8 @@ func TestGetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			userUC := mock.NewMockUserUsecase(ctrl)
-			tc.buildStubs(userUC)
+			uc := mock.NewMockUserUsecase(ctrl)
+			tc.buildStubs(uc)
 
 			recorder := httptest.NewRecorder()
 
@@ -89,7 +89,7 @@ func TestGetUser(t *testing.T) {
 			assert.NoError(t, err)
 
 			router := chi.NewRouter()
-			NewUserHandler(router, userUC)
+			NewUserHandler(router, uc)
 			router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -111,8 +111,8 @@ func TestCreateUser(t *testing.T) {
 	}{
 		"OK": {
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Eq(user)).
 					Times(1).
 					Return(user.ID, nil)
@@ -123,8 +123,8 @@ func TestCreateUser(t *testing.T) {
 		},
 		"Invalid Body": {
 			user: "invalid body",
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -134,8 +134,8 @@ func TestCreateUser(t *testing.T) {
 		},
 		"Duplicated": {
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(0, errors.New("duplicate key value"))
@@ -146,8 +146,8 @@ func TestCreateUser(t *testing.T) {
 		},
 		"Unexpected Error": {
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(0, sql.ErrConnDone)
@@ -162,8 +162,8 @@ func TestCreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			userUC := mock.NewMockUserUsecase(ctrl)
-			tc.buildStubs(userUC)
+			uc := mock.NewMockUserUsecase(ctrl)
+			tc.buildStubs(uc)
 
 			recorder := httptest.NewRecorder()
 
@@ -174,7 +174,7 @@ func TestCreateUser(t *testing.T) {
 			assert.NoError(t, err)
 
 			router := chi.NewRouter()
-			NewUserHandler(router, userUC)
+			NewUserHandler(router, uc)
 			router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -198,8 +198,8 @@ func TestUpdateUser(t *testing.T) {
 		"OK": {
 			ID:   1,
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Eq(user)).
 					Times(1).
 					Return(nil)
@@ -211,8 +211,8 @@ func TestUpdateUser(t *testing.T) {
 		"Invalid Body": {
 			ID:   1,
 			user: "invalid body",
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -223,8 +223,8 @@ func TestUpdateUser(t *testing.T) {
 		"Invalid URL Param": {
 			ID:   "ID",
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -235,8 +235,8 @@ func TestUpdateUser(t *testing.T) {
 		"Not Found": {
 			ID:   1,
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(errors.New(errs.ErrUserNotFound))
@@ -248,8 +248,8 @@ func TestUpdateUser(t *testing.T) {
 		"Duplicated": {
 			ID:   1,
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(errors.New("duplicate key value"))
@@ -261,8 +261,8 @@ func TestUpdateUser(t *testing.T) {
 		"Unexpected Error": {
 			ID:   1,
 			user: user,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(sql.ErrConnDone)
@@ -277,8 +277,8 @@ func TestUpdateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			userUC := mock.NewMockUserUsecase(ctrl)
-			tc.buildStubs(userUC)
+			uc := mock.NewMockUserUsecase(ctrl)
+			tc.buildStubs(uc)
 
 			recorder := httptest.NewRecorder()
 
@@ -290,7 +290,7 @@ func TestUpdateUser(t *testing.T) {
 			assert.NoError(t, err)
 
 			router := chi.NewRouter()
-			NewUserHandler(router, userUC)
+			NewUserHandler(router, uc)
 			router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -305,8 +305,8 @@ func TestDeleteUser(t *testing.T) {
 	}{
 		"OK": {
 			ID: 1,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Eq(1)).
 					Times(1).
 					Return(nil)
@@ -317,8 +317,8 @@ func TestDeleteUser(t *testing.T) {
 		},
 		"Invalid URL Param": {
 			ID: "invalid",
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -328,8 +328,8 @@ func TestDeleteUser(t *testing.T) {
 		},
 		"Not Found": {
 			ID: 1,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(errors.New(errs.ErrUserNotFound))
@@ -340,8 +340,8 @@ func TestDeleteUser(t *testing.T) {
 		},
 		"Unexpected Error": {
 			ID: 1,
-			buildStubs: func(userUC *mock.MockUserUsecase) {
-				userUC.EXPECT().
+			buildStubs: func(uc *mock.MockUserUsecase) {
+				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(sql.ErrConnDone)
@@ -356,8 +356,8 @@ func TestDeleteUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			userUC := mock.NewMockUserUsecase(ctrl)
-			tc.buildStubs(userUC)
+			uc := mock.NewMockUserUsecase(ctrl)
+			tc.buildStubs(uc)
 
 			recorder := httptest.NewRecorder()
 
@@ -366,7 +366,7 @@ func TestDeleteUser(t *testing.T) {
 			assert.NoError(t, err)
 
 			router := chi.NewRouter()
-			NewUserHandler(router, userUC)
+			NewUserHandler(router, uc)
 			router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
