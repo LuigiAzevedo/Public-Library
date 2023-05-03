@@ -103,7 +103,6 @@ func (h *loanHandler) BorrowBook(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, errs.ErrReturnBookFirst, http.StatusBadRequest)
 			case errs.ErrBookUnavailable:
 				http.Error(w, errs.ErrBookUnavailable, http.StatusNotFound)
-
 			default:
 				http.Error(w, errs.ErrBorrowBook, http.StatusInternalServerError)
 			}
