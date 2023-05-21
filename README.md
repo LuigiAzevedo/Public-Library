@@ -1,6 +1,6 @@
 # Public Library V2
 
-Inspired by eminetto's  [clean architecture](https://github.com/eminetto/clean-architecture-go-v2) backend API from 2020, this Public Library API project was developed from the ground up, utilizing hexagonal architecture. The purpose was to deepen my understanding of hexagonal architecture and provide a beginner-friendly project structure example. Although the project is not flawless, constructive feedback is highly appreciated to drive further improvements.
+Inspired by eminetto's [clean architecture](https://github.com/eminetto/clean-architecture-go-v2) backend API from 2020, this Public Library API project was developed from the ground up, utilizing hexagonal architecture. The purpose was to deepen my understanding of hexagonal architecture and provide a beginner-friendly project structure example. Although the project is not flawless, constructive feedback is highly appreciated to drive further improvements.
 
 ## What's hexagonal architecture
 
@@ -41,6 +41,72 @@ By employing hexagonal architecture, developers can achieve better maintainabili
 - **Performance Considerations** : Hexagonal architecture's additional layers and abstractions can slightly impact performance, which may be a concern for performance-critical projects.
 
 - **Project Constraints** : External factors, such as legacy systems or platform limitations, may not align well with hexagonal architecture.
+
+## How to use this project
+
+1. ### Configure the app.env File
+
+    Start by configuring the app.env file to connect to your database. This file holds the necessary configuration settings for your application.
+
+2. ### Verify Go Installation and Dependencies
+
+    Before proceeding, ensure that you have Go installed on your system. Additionally, make sure you have installed all the necessary dependencies required by the project. Refer to the project documentation for information on installing dependencies.
+
+### Run the project
+
+```console
+go run cmd/main.go
+```
+
+### Create Book
+
+```console
+curl -X "POST" "http://localhost:8080/v1/books" \
+-d $'{
+    "title": "100 Go Mistakes and How to Avoid Them",
+    "author": "Teiva Harsanyi",
+    "amount": 5
+}'
+```
+
+### Get book by ID
+
+```console
+curl -X "GET" "http://localhost:8080/v1/books/1?"
+```
+
+### Search book by title
+
+```console
+curl -X "GET" "http://localhost:8080/v1/books" \
+-H 'Accept: application/json' \
+-d $'{ 
+    "title": "100 Go Mistakes"
+}'
+```
+
+### List Books
+
+```console
+curl -X "GET" "http://localhost:8080/v1/books?"
+```
+
+### Update Book
+
+```console
+curl -X "PUT" "http://localhost:8080/v1/books/1" \
+-d $'{
+    "title": "99 Go Mistakes and How to Avoid Them",
+    "author": "Teiva Harsanyi",
+    "amount": 5
+}'
+```
+
+### Delete Book
+
+```console
+curl -X "DELETE" "http://localhost:8080/v1/books/1"
+```
 
 ## Documentation
 
