@@ -1,4 +1,4 @@
-# Public Library V2
+# Public Library
 
 Inspired by eminetto's [clean architecture](https://github.com/eminetto/clean-architecture-go-v2) backend API from 2020, this Public Library API project was developed from the ground up, utilizing hexagonal architecture. The purpose was to deepen my understanding of hexagonal architecture and provide a beginner-friendly project structure example. Although the project is not flawless, constructive feedback is highly appreciated to drive further improvements.
 
