@@ -58,7 +58,7 @@ By employing hexagonal architecture, developers can achieve better maintainabili
 go run cmd/main.go
 ```
 
-### Create Book
+### Create book
 
 ```console
 curl -X "POST" "http://localhost:8080/v1/books" \
@@ -75,7 +75,7 @@ curl -X "POST" "http://localhost:8080/v1/books" \
 curl -X "GET" "http://localhost:8080/v1/books/1"
 ```
 
-### Search book by title
+### Search books by title
 
 ```console
 curl -X "GET" "http://localhost:8080/v1/books" \
@@ -85,13 +85,13 @@ curl -X "GET" "http://localhost:8080/v1/books" \
 }'
 ```
 
-### List Books
+### List books
 
 ```console
 curl -X "GET" "http://localhost:8080/v1/books?"
 ```
 
-### Update Book
+### Update book
 
 ```console
 curl -X "PUT" "http://localhost:8080/v1/books/1" \
@@ -102,7 +102,7 @@ curl -X "PUT" "http://localhost:8080/v1/books/1" \
 }'
 ```
 
-### Delete Book
+### Delete book
 
 ```console
 curl -X "DELETE" "http://localhost:8080/v1/books/1"
@@ -140,6 +140,32 @@ curl -X "PUT" "http://localhost:8080/v1/users/1" \
 
 ```console
 curl -X "DELETE" "http://localhost:8080/v1/users/1"
+```
+
+### List all user loans
+
+```console
+curl -X "GET" "http://localhost:8080/v1/loans/1"
+```
+
+### Borrow book
+
+```console
+curl -X "POST" "http://localhost:8080/v1/loans/borrow" \
+-d $'{
+    "user_id": 1,
+    "book_id": 1
+}'
+```
+
+### Return book
+
+```console
+curl -X "POST" "http://localhost:8080/v1/loans/return" \
+-d $'{
+    "user_id": 1,
+    "book_id": 1
+}'
 ```
 
 ## Documentation
