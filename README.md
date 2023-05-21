@@ -2,6 +2,46 @@
 
 Inspired by eminetto's  [clean architecture](https://github.com/eminetto/clean-architecture-go-v2) backend API from 2020, this Public Library API project was developed from the ground up, utilizing hexagonal architecture. The purpose was to deepen my understanding of hexagonal architecture and provide a beginner-friendly project structure example. Although the project is not flawless, constructive feedback is highly appreciated to drive further improvements.
 
+## What's hexagonal architecture
+
+Hexagonal architecture, also known as Ports and Adapters architecture, is a software design pattern that promotes loose coupling and separation of concerns. It aims to isolate the core business logic of an application from the external dependencies and infrastructure details.
+
+In hexagonal architecture, the core business logic resides at the center, surrounded by layers of adapters. These adapters act as interfaces between the core and the external systems such as databases, user interfaces, or third-party services. The core is oblivious to the existence of these adapters, which enables flexibility and ease of testing.
+
+The architecture emphasizes the concept of ports and adapters. Ports define the interfaces through which the core interacts with the outside world, allowing it to remain independent of any specific technology or implementation details. Adapters, on the other hand, implement these interfaces and handle the communication between the core and the external systems.
+
+By employing hexagonal architecture, developers can achieve better maintainability, testability, and flexibility in their applications. It helps in isolating business rules, decoupling from external dependencies, and allows for easier replacement or addition of components.
+
+## Why you should use hexagonal architecture
+
+- **Modularity** : Clear separation and isolation of components for improved maintainability.
+
+- **Testability** : Core logic can be tested independently of external dependencies.
+
+- **Flexibility** : Easy adaptation to changing requirements and integration with new technologies.
+
+- **Decoupling** : Loose coupling between core logic and external systems for independent development.
+
+- **Scalability** : Ability to scale different parts of the application independently.
+
+- **Maintainability** : Localized changes and bug fixes without impacting the entire system.
+
+- **Portability** : Core logic is independent of specific implementation details for easier migration.
+
+## Why you shouldn't use hexagonal architecture
+
+- **Simplicity** : For small or straightforward projects, a simpler architectural approach may be more suitable.
+
+- **Overhead** : Hexagonal architecture introduces additional complexity and overhead, which may not be justified for resource-constrained projects.
+
+- **Learning Curve** : Hexagonal architecture requires time and effort to learn and implement correctly, making it less suitable for time-sensitive or resource-limited projects.
+
+- **Project Scope** : For small or short-lived projects, the benefits of hexagonal architecture may not outweigh the added effort and complexity.
+
+- **Performance Considerations** : Hexagonal architecture's additional layers and abstractions can slightly impact performance, which may be a concern for performance-critical projects.
+
+- **Project Constraints** : External factors, such as legacy systems or platform limitations, may not align well with hexagonal architecture.
+
 ## Documentation
 
 - [Database](https://dbdocs.io/luigiazevedo97/public_library_v2)
