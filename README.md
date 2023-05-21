@@ -72,7 +72,7 @@ curl -X "POST" "http://localhost:8080/v1/books" \
 ### Get book by ID
 
 ```console
-curl -X "GET" "http://localhost:8080/v1/books/1?"
+curl -X "GET" "http://localhost:8080/v1/books/1"
 ```
 
 ### Search book by title
@@ -106,6 +106,40 @@ curl -X "PUT" "http://localhost:8080/v1/books/1" \
 
 ```console
 curl -X "DELETE" "http://localhost:8080/v1/books/1"
+```
+
+### Create user
+
+```console
+curl -X "POST" "http://localhost:8080/v1/users" \
+-d $'{
+    "username": "Luigi",
+    "password": "secret",
+    "email": "luigi@email.com"
+}'
+```
+
+### Get user
+
+```console
+curl -X "GET" "http://localhost:8080/v1/users/1"
+```
+
+### Update user
+
+```console
+curl -X "PUT" "http://localhost:8080/v1/users/1" \
+-d $'{
+    "username": "newUsername",
+    "password": "superSecret",
+    "email": "newemail@email.com"
+}'
+```
+
+### Delete user
+
+```console
+curl -X "DELETE" "http://localhost:8080/v1/users/1"
 ```
 
 ## Documentation
