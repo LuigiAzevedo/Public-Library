@@ -54,7 +54,7 @@ func TestGetBook(t *testing.T) {
 				uc.EXPECT().
 					GetBook(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrNoRows)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, errors.New(errs.ErrBookNotFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -66,7 +66,7 @@ func TestGetBook(t *testing.T) {
 				uc.EXPECT().
 					GetBook(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrConnDone)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -152,7 +152,7 @@ func TestSearchBooks(t *testing.T) {
 				uc.EXPECT().
 					ListBooks(gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrNoRows)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, errors.New(errs.ErrBookNotFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -164,7 +164,7 @@ func TestSearchBooks(t *testing.T) {
 				uc.EXPECT().
 					ListBooks(gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrConnDone)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -327,7 +327,7 @@ func TestUpdateBook(t *testing.T) {
 				uc.EXPECT().
 					UpdateBook(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrBookNotFound))
+					Return(fmt.Errorf("%s: %w", errs.ErrGetBook, errors.New(errs.ErrBookNotFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -340,7 +340,7 @@ func TestUpdateBook(t *testing.T) {
 				uc.EXPECT().
 					UpdateBook(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(sql.ErrConnDone)
+					Return(fmt.Errorf("%s: %w", errs.ErrGetBook, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -409,7 +409,7 @@ func TestDeleteBook(t *testing.T) {
 				uc.EXPECT().
 					DeleteBook(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrBookNotFound))
+					Return(fmt.Errorf("%s: %w", errs.ErrGetBook, errors.New(errs.ErrBookNotFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -421,7 +421,7 @@ func TestDeleteBook(t *testing.T) {
 				uc.EXPECT().
 					DeleteBook(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(sql.ErrConnDone)
+					Return(fmt.Errorf("%s: %w", errs.ErrGetBook, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
