@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
