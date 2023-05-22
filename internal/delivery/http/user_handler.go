@@ -71,7 +71,7 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var u *entity.User
+	var u entity.User
 
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
@@ -81,7 +81,7 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	id, err := h.UserUsecase.CreateUser(ctx, u)
+	id, err := h.UserUsecase.CreateUser(ctx, &u)
 	if err != nil {
 		log.Error().Msg(err.Error())
 
@@ -109,7 +109,7 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	var u *entity.User
+	var u entity.User
 
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
@@ -126,7 +126,7 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	err = h.UserUsecase.UpdateUser(ctx, u)
+	err = h.UserUsecase.UpdateUser(ctx, &u)
 	if err != nil {
 		log.Error().Msg(err.Error())
 
