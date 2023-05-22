@@ -120,7 +120,7 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
-	var b *entity.Book
+	var b entity.Book
 
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
@@ -130,7 +130,7 @@ func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	id, err := h.BookUsecase.CreateBook(ctx, b)
+	id, err := h.BookUsecase.CreateBook(ctx, &b)
 	if err != nil {
 		log.Error().Msg(err.Error())
 
@@ -154,7 +154,7 @@ func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
-	var b *entity.Book
+	var b entity.Book
 
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
@@ -171,7 +171,7 @@ func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	err = h.BookUsecase.UpdateBook(ctx, b)
+	err = h.BookUsecase.UpdateBook(ctx, &b)
 	if err != nil {
 		log.Error().Msg(err.Error())
 
