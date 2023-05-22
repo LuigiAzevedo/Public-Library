@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
@@ -51,7 +49,7 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Is(err, sql.ErrNoRows) {
+			if errors.Unwrap(err).Error() == errs.ErrUserNotFound {
 				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
 			} else {
 				http.Error(w, errs.ErrGetUser, http.StatusInternalServerError)
@@ -89,7 +87,7 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if strings.Contains(errors.Cause(err).Error(), "duplicate key value") {
+			if errors.Unwrap(err).Error() == errs.ErrAlreadyExists {
 				http.Error(w, errs.ErrAlreadyExists, http.StatusBadRequest)
 			} else {
 				http.Error(w, errs.ErrCreateUser, http.StatusInternalServerError)
@@ -134,10 +132,10 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Cause(err).Error() == errs.ErrUserNotFound {
+			if errors.Unwrap(err).Error() == errs.ErrUserNotFound {
 				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
 				return
-			} else if strings.Contains(errors.Cause(err).Error(), "duplicate key value") {
+			} else if errors.Unwrap(err).Error() == errs.ErrAlreadyExists {
 				http.Error(w, errs.ErrAlreadyExists, http.StatusBadRequest)
 			} else {
 				http.Error(w, errs.ErrUpdateUser, http.StatusInternalServerError)
@@ -167,7 +165,7 @@ func (h *userHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Cause(err).Error() == errs.ErrUserNotFound {
+			if errors.Unwrap(err).Error() == errs.ErrUserNotFound {
 				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
 				return
 			} else {

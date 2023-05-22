@@ -14,13 +14,14 @@ var (
 
 // user errors
 var (
-	ErrGetUser       = "error has occurred while getting the user"
-	ErrCreateUser    = "error has occurred while creating the user"
-	ErrUpdateUser    = "error has occurred while updating the user"
-	ErrDeleteUser    = "error has occurred while deleting the user"
-	ErrUserNotFound  = "user not found"
-	ErrInvalidUserID = "user id should be a positive integer"
-	ErrAlreadyExists = "username or email already exists"
+	ErrGetUser         = "error has occurred while getting the user"
+	ErrCreateUser      = "error has occurred while creating the user"
+	ErrUpdateUser      = "error has occurred while updating the user"
+	ErrDeleteUser      = "error has occurred while deleting the user"
+	ErrUserNotFound    = "user not found"
+	ErrInvalidUserID   = "user id should be a positive integer"
+	ErrAlreadyExists   = "username or email already exists"
+	ErrHashingPassword = "error has occurred while hashing the password"
 )
 
 // loan errors
