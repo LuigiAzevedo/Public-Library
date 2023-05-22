@@ -190,6 +190,8 @@ curl -X "POST" "http://localhost:8080/v1/loans/return" \
 
 - [Gomock](https://github.com/golang/mock) - Mocking framework
 
+- [Viper](https://github.com/spf13/viper) - Viper is a complete configuration solution for Go applications.
+
 ## Tools used
 
 - [Golang](https://go.dev/) - Programming language
