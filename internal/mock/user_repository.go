@@ -2,10 +2,11 @@ package mock
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	ports "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -41,7 +42,7 @@ func (r *mockUserRepository) Get(ctx context.Context, id int) (*entity.User, err
 		}
 	}
 
-	return nil, sql.ErrNoRows
+	return nil, errors.New(errs.ErrUserNotFound)
 }
 
 func (r *mockUserRepository) Create(ctx context.Context, u *entity.User) (int, error) {
@@ -61,7 +62,7 @@ func (r *mockUserRepository) Update(ctx context.Context, u *entity.User) error {
 		}
 	}
 
-	return sql.ErrNoRows
+	return errors.New(errs.ErrUserNotFound)
 }
 
 func (r *mockUserRepository) Delete(ctx context.Context, id int) error {
@@ -72,5 +73,5 @@ func (r *mockUserRepository) Delete(ctx context.Context, id int) error {
 		}
 	}
 
-	return sql.ErrNoRows
+	return errors.New(errs.ErrUserNotFound)
 }

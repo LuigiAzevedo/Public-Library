@@ -104,7 +104,7 @@ func TestCreateUser(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("Prepare Failed", func(t *testing.T) {
+	t.Run("Query Failed", func(t *testing.T) {
 		mock.ExpectPrepare("INSERT INTO users").
 			ExpectQuery().
 			WillReturnError(sql.ErrConnDone)
