@@ -1,14 +1,13 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
@@ -52,7 +51,7 @@ func (h *bookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Is(err, sql.ErrNoRows) {
+			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
 				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
 			} else {
 				http.Error(w, errs.ErrGetBook, http.StatusInternalServerError)
@@ -79,7 +78,7 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 	var req SearchBookRequest
 
 	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil && !errors.Is(err, io.EOF) {
+	if err != nil && err != io.EOF {
 		log.Error().Msg(err.Error())
 		http.Error(w, errs.ErrWrongBodyTitle, http.StatusBadRequest)
 		return
@@ -100,7 +99,7 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Is(err, sql.ErrNoRows) {
+			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
 				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
 			} else {
 				http.Error(w, errs.ErrSearchBook, http.StatusInternalServerError)
@@ -179,7 +178,7 @@ func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Cause(err).Error() == errs.ErrBookNotFound {
+			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
 				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
 			} else {
 				http.Error(w, errs.ErrUpdateBook, http.StatusInternalServerError)
@@ -208,7 +207,7 @@ func (h *bookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Cause(err).Error() == errs.ErrBookNotFound {
+			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
 				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
 			} else {
 				http.Error(w, errs.ErrDeleteBook, http.StatusInternalServerError)

@@ -2,11 +2,12 @@ package mock
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	ports "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -42,7 +43,7 @@ func (r *mockBookRepository) Get(ctx context.Context, id int) (*entity.Book, err
 		}
 	}
 
-	return nil, sql.ErrNoRows
+	return nil, errors.New(errs.ErrBookNotFound)
 }
 
 func (r *mockBookRepository) List(ctx context.Context) ([]*entity.Book, error) {
@@ -59,7 +60,7 @@ func (r *mockBookRepository) Search(ctx context.Context, query string) ([]*entit
 	}
 
 	if len(result) == 0 {
-		return nil, sql.ErrNoRows
+		return nil, errors.New(errs.ErrBookNotFound)
 	}
 
 	return result, nil
@@ -82,7 +83,7 @@ func (r *mockBookRepository) Update(ctx context.Context, b *entity.Book) error {
 		}
 	}
 
-	return sql.ErrNoRows
+	return errors.New(errs.ErrBookNotFound)
 }
 
 func (r *mockBookRepository) Delete(ctx context.Context, id int) error {
@@ -93,5 +94,5 @@ func (r *mockBookRepository) Delete(ctx context.Context, id int) error {
 		}
 	}
 
-	return sql.ErrNoRows
+	return errors.New(errs.ErrBookNotFound)
 }
