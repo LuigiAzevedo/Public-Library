@@ -2,12 +2,12 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
@@ -25,11 +25,11 @@ func TestBorrowBook(t *testing.T) {
 	})
 	t.Run("Book Unavailable", func(t *testing.T) {
 		err := uc.BorrowBook(ctx, 1, 2)
-		assert.Equal(t, "book unavailable at the moment", errors.Cause(err).Error())
+		assert.Equal(t, errs.ErrBookUnavailable, err.Error())
 	})
 	t.Run("Wrong ID", func(t *testing.T) {
 		err := uc.ReturnBook(ctx, 5, 5)
-		assert.Equal(t, "loan does't exists or already returned", errors.Cause(err).Error())
+		assert.Equal(t, errs.ErrLoanAlreadyReturned, err.Error())
 	})
 }
 
@@ -47,11 +47,11 @@ func TestReturnBook(t *testing.T) {
 	})
 	t.Run("Already Returned", func(t *testing.T) {
 		err := uc.ReturnBook(ctx, 1, 1)
-		assert.Equal(t, "loan does't exists or already returned", errors.Cause(err).Error())
+		assert.Equal(t, errs.ErrLoanAlreadyReturned, err.Error())
 	})
 	t.Run("Wrong ID", func(t *testing.T) {
 		err := uc.ReturnBook(ctx, 5, 5)
-		assert.Equal(t, "loan does't exists or already returned", errors.Cause(err).Error())
+		assert.Equal(t, errs.ErrLoanAlreadyReturned, err.Error())
 	})
 }
 
@@ -75,7 +75,7 @@ func TestSearchUserLoans(t *testing.T) {
 	})
 	t.Run("Not Found", func(t *testing.T) {
 		loans, err := uc.SearchUserLoans(ctx, 5)
-		assert.Equal(t, sql.ErrNoRows, errors.Cause(err))
+		assert.Equal(t, errs.ErrNoLoansFound, errors.Unwrap(err).Error())
 		assert.Nil(t, loans)
 	})
 }

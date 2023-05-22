@@ -2,10 +2,11 @@ package mock
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	ports "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -60,7 +61,7 @@ func (r *mockLoanRepository) Search(ctx context.Context, userID int) ([]*entity.
 	}
 
 	if len(loans) == 0 {
-		return nil, sql.ErrNoRows
+		return nil, errors.New(errs.ErrNoLoansFound)
 	}
 
 	return loans, nil
@@ -87,5 +88,5 @@ func (r *mockLoanRepository) ReturnTransaction(ctx context.Context, u *entity.Us
 		}
 	}
 
-	return sql.ErrNoRows
+	return errors.New(errs.ErrLoanAlreadyReturned)
 }
