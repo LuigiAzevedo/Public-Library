@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	r "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -71,7 +73,7 @@ func (r *loanRepository) Search(ctx context.Context, userID int) ([]*entity.Loan
 	}
 
 	if loans == nil {
-		return nil, sql.ErrNoRows
+		return nil, errors.New(errs.ErrNoLoansFound)
 	}
 
 	return loans, nil

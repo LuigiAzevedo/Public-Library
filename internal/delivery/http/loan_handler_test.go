@@ -54,7 +54,7 @@ func TestSearchUserLoan(t *testing.T) {
 				uc.EXPECT().
 					SearchUserLoans(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrNoRows)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, errors.New(errs.ErrNoLoansFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -66,7 +66,7 @@ func TestSearchUserLoan(t *testing.T) {
 				uc.EXPECT().
 					SearchUserLoans(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrConnDone)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)

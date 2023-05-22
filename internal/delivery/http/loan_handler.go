@@ -1,15 +1,14 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
@@ -50,7 +49,7 @@ func (h *loanHandler) SearchUserLoans(w http.ResponseWriter, r *http.Request) {
 		case <-ctx.Done():
 			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Is(err, sql.ErrNoRows) {
+			if errors.Unwrap(err).Error() == errs.ErrNoLoansFound {
 				http.Error(w, errs.ErrNoLoansFound, http.StatusNotFound)
 			} else {
 				http.Error(w, errs.ErrSearchUserLoans, http.StatusInternalServerError)
@@ -78,7 +77,7 @@ func (h *loanHandler) BorrowBook(w http.ResponseWriter, r *http.Request) {
 	var req LoanRequest
 
 	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil && !errors.Is(err, io.EOF) {
+	if err != nil && err != io.EOF {
 		log.Error().Msg(err.Error())
 		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
 		return
