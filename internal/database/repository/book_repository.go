@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	r "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -35,7 +36,7 @@ func (r *bookRepository) Get(ctx context.Context, id int) (*entity.Book, error) 
 	var updatedAt sql.NullTime
 	err = row.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &updatedAt, &b.CreatedAt)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(errs.ErrBookNotFound)
 	}
 
 	// check if updated_at is NULL before scanning it
@@ -81,7 +82,7 @@ func (r *bookRepository) List(ctx context.Context) ([]*entity.Book, error) {
 	}
 
 	if books == nil {
-		return nil, sql.ErrNoRows
+		return nil, errors.New(errs.ErrBookNotFound)
 	}
 
 	return books, nil
@@ -122,7 +123,7 @@ func (r *bookRepository) Search(ctx context.Context, query string) ([]*entity.Bo
 	}
 
 	if books == nil {
-		return nil, sql.ErrNoRows
+		return nil, errors.New(errs.ErrBookNotFound)
 	}
 
 	return books, nil
