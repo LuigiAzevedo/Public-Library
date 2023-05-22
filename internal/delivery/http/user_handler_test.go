@@ -54,7 +54,7 @@ func TestGetUser(t *testing.T) {
 				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrNoRows)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetUser, errors.New(errs.ErrUserNotFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -66,7 +66,7 @@ func TestGetUser(t *testing.T) {
 				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, sql.ErrConnDone)
+					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetUser, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -138,7 +138,7 @@ func TestCreateUser(t *testing.T) {
 				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(0, errors.New("duplicate key value"))
+					Return(0, fmt.Errorf("%s: %w", errs.ErrCreateUser, errors.New(errs.ErrAlreadyExists)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -150,7 +150,7 @@ func TestCreateUser(t *testing.T) {
 				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(0, sql.ErrConnDone)
+					Return(0, fmt.Errorf("%s: %w", errs.ErrCreateUser, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -239,7 +239,7 @@ func TestUpdateUser(t *testing.T) {
 				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrUserNotFound))
+					Return(fmt.Errorf("%s: %w", errs.ErrUpdateUser, errors.New(errs.ErrUserNotFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -252,7 +252,7 @@ func TestUpdateUser(t *testing.T) {
 				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New("duplicate key value"))
+					Return(fmt.Errorf("%s: %w", errs.ErrUpdateUser, errors.New(errs.ErrAlreadyExists)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -265,7 +265,7 @@ func TestUpdateUser(t *testing.T) {
 				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(sql.ErrConnDone)
+					Return(fmt.Errorf("%s: %w", errs.ErrUpdateUser, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -332,7 +332,7 @@ func TestDeleteUser(t *testing.T) {
 				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrUserNotFound))
+					Return(fmt.Errorf("%s: %w", errs.ErrDeleteUser, errors.New(errs.ErrUserNotFound)))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -344,7 +344,7 @@ func TestDeleteUser(t *testing.T) {
 				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(sql.ErrConnDone)
+					Return(fmt.Errorf("%s: %w", errs.ErrDeleteUser, sql.ErrConnDone))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)

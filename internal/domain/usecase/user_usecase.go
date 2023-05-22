@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
@@ -27,7 +27,7 @@ func NewUserUseCase(repository r.UserRepository) u.UserUsecase {
 func (s *userUseCase) GetUser(ctx context.Context, id int) (*entity.User, error) {
 	user, err := s.userRepo.Get(ctx, id)
 	if err != nil {
-		return nil, errors.Wrap(err, errs.ErrGetUser)
+		return nil, fmt.Errorf("%s: %w", errs.ErrGetUser, err)
 	}
 
 	return user, nil
@@ -36,19 +36,19 @@ func (s *userUseCase) GetUser(ctx context.Context, id int) (*entity.User, error)
 func (s *userUseCase) CreateUser(ctx context.Context, u *entity.User) (int, error) {
 	user, err := entity.NewUser(u.Username, u.Password, u.Email)
 	if err != nil {
-		return 0, errors.Wrap(err, errs.ErrCreateUser)
+		return 0, fmt.Errorf("%s: %w", errs.ErrCreateUser, err)
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return 0, errors.Wrap(err, "error has occurred while hashing the password")
+		return 0, fmt.Errorf("%s: %w", errs.ErrHashingPassword, err)
 	}
 
 	user.Password = string(hashedPassword)
 
 	id, err := s.userRepo.Create(ctx, user)
 	if err != nil {
-		return 0, errors.Wrap(err, errs.ErrCreateUser)
+		return 0, fmt.Errorf("%s: %w", errs.ErrCreateUser, err)
 	}
 
 	return id, nil
@@ -59,12 +59,12 @@ func (s *userUseCase) UpdateUser(ctx context.Context, u *entity.User) error {
 
 	err := u.Validate()
 	if err != nil {
-		return errors.Wrap(err, errs.ErrUpdateUser)
+		return fmt.Errorf("%s: %w", errs.ErrUpdateUser, err)
 	}
 
 	err = s.userRepo.Update(ctx, u)
 	if err != nil {
-		return errors.Wrap(err, errs.ErrUpdateUser)
+		return fmt.Errorf("%s: %w", errs.ErrUpdateUser, err)
 	}
 
 	return nil
@@ -73,7 +73,7 @@ func (s *userUseCase) UpdateUser(ctx context.Context, u *entity.User) error {
 func (s *userUseCase) DeleteUser(ctx context.Context, id int) error {
 	err := s.userRepo.Delete(ctx, id)
 	if err != nil {
-		return errors.Wrap(err, errs.ErrDeleteUser)
+		return fmt.Errorf("%s: %w", errs.ErrDeleteUser, err)
 	}
 
 	return nil

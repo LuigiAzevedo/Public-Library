@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/lib/pq"
+
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	r "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -35,7 +38,7 @@ func (r *userRepository) Get(ctx context.Context, id int) (*entity.User, error) 
 	var updatedAt sql.NullTime
 	err = row.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &updatedAt, &u.CreatedAt)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(errs.ErrUserNotFound)
 	}
 	// check if updated_at is NULL before scanning it
 	if updatedAt.Valid {
@@ -55,6 +58,11 @@ func (r *userRepository) Create(ctx context.Context, u *entity.User) (int, error
 
 	err = stmt.QueryRowContext(ctx, u.Username, u.Password, u.Email).Scan(&u.ID)
 	if err != nil {
+		pqErr, ok := err.(*pq.Error)
+		if ok && pqErr.Code == "23505" {
+			return 0, errors.New(errs.ErrAlreadyExists)
+		}
+
 		return 0, err
 	}
 
@@ -71,6 +79,11 @@ func (r *userRepository) Update(ctx context.Context, u *entity.User) error {
 
 	result, err := stmt.ExecContext(ctx, u.Username, u.Password, u.Email, u.ID)
 	if err != nil {
+		pqErr, ok := err.(*pq.Error)
+		if ok && pqErr.Code == "23505" {
+			return errors.New(errs.ErrAlreadyExists)
+		}
+
 		return err
 	}
 
@@ -78,7 +91,7 @@ func (r *userRepository) Update(ctx context.Context, u *entity.User) error {
 	if err != nil {
 		return err
 	} else if rowsAffected == 0 {
-		return errors.New("user not found")
+		return errors.New(errs.ErrUserNotFound)
 	}
 
 	return nil
@@ -101,7 +114,7 @@ func (r *userRepository) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	} else if rowsAffected == 0 {
-		return errors.New("user not found")
+		return errors.New(errs.ErrUserNotFound)
 	}
 
 	return nil

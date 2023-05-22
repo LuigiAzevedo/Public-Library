@@ -2,13 +2,13 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
+	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
@@ -24,7 +24,7 @@ func TestGetUser(t *testing.T) {
 	})
 	t.Run("Not Found", func(t *testing.T) {
 		_, err := uc.GetUser(ctx, 0)
-		assert.Equal(t, sql.ErrNoRows, errors.Cause(err))
+		assert.Equal(t, errs.ErrUserNotFound, errors.Unwrap(err).Error())
 	})
 }
 
@@ -71,7 +71,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		err := uc.UpdateUser(ctx, u)
-		assert.Equal(t, sql.ErrNoRows, errors.Cause(err))
+		assert.Equal(t, errs.ErrUserNotFound, errors.Unwrap(err).Error())
 	})
 }
 
@@ -86,6 +86,6 @@ func TestDeleteUser(t *testing.T) {
 	})
 	t.Run("Not Found", func(t *testing.T) {
 		err := uc.DeleteUser(ctx, 5)
-		assert.Equal(t, sql.ErrNoRows, errors.Cause(err))
+		assert.Equal(t, errs.ErrUserNotFound, errors.Unwrap(err).Error())
 	})
 }
