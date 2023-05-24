@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,13 +23,13 @@ func TestNewBook(t *testing.T) {
 			title:  "",
 			author: "",
 			amount: 5,
-			want:   errors.New("invalid book"),
+			want:   ErrInvalidBook,
 		},
 		"Invalid Amount": {
 			title:  "Let's Go Further!",
 			author: "Alex Edwards",
 			amount: 0,
-			want:   errors.New("invalid book"),
+			want:   ErrInvalidBook,
 		},
 	}
 	for name, tc := range tests {

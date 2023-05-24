@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"time"
 )
 
@@ -20,8 +19,7 @@ func NewLoan(userID, bookID int) (*Loan, error) {
 		BookID: bookID,
 	}
 
-	err := loan.Validate()
-	if err != nil {
+	if err := loan.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -31,7 +29,7 @@ func NewLoan(userID, bookID int) (*Loan, error) {
 // Validate validates the loan entity.
 func (loan *Loan) Validate() error {
 	if loan.UserID <= 0 || loan.BookID <= 0 {
-		return errors.New("user ID and book ID can't be empty")
+		return ErrInvalidLoan
 	}
 
 	return nil

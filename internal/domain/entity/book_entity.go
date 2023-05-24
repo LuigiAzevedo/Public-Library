@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"time"
 )
 
@@ -24,8 +23,7 @@ func NewBook(title, author string, amount int) (*Book, error) {
 		UpdatedAt: time.Time{},
 	}
 
-	err := book.Validate()
-	if err != nil {
+	if err := book.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -35,7 +33,7 @@ func NewBook(title, author string, amount int) (*Book, error) {
 // Validate validates the book entity.
 func (book *Book) Validate() error {
 	if book.Title == "" || book.Author == "" || book.Amount <= 0 {
-		return errors.New("invalid book")
+		return ErrInvalidBook
 	}
 
 	return nil

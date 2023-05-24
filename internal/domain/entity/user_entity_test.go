@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,31 +23,31 @@ func TestNewUser(t *testing.T) {
 			username: "",
 			password: "",
 			email:    "",
-			want:     errors.New("username, password and email can't be empty"),
+			want:     ErrEmptyUserField,
 		},
 		"Fields With Spaces": {
 			username: "User Name",
 			password: "Pass Word",
 			email:    "luigi@email.com",
-			want:     errors.New("username and password can't have spaces"),
+			want:     ErrFieldWithSpaces,
 		},
 		"Short Password": {
 			username: "luigi",
 			password: "short",
 			email:    "luigi@email.com",
-			want:     errors.New("password shorter than 6 characters"),
+			want:     ErrShortPassword,
 		},
 		"Long Password": {
 			username: "luigi",
 			password: "ReallyLongPasswordReallyLongPasswordReallyLongPasswordReallyLongPassword2",
 			email:    "luigi@email.com",
-			want:     errors.New("password longer than 72 characters"),
+			want:     ErrLongPassword,
 		},
 		"Invalid Email": {
 			username: "luigi",
 			password: "secret",
 			email:    "luigiEmail.com",
-			want:     errors.New("invalid email address"),
+			want:     ErrInvalidEmail,
 		},
 	}
 	for name, tc := range tests {
