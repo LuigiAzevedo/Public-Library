@@ -2,12 +2,11 @@ package mock
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
+	err "github.com/LuigiAzevedo/public-library-v2/internal/database/repository"
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	ports "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -43,7 +42,7 @@ func (r *mockBookRepository) Get(ctx context.Context, id int) (*entity.Book, err
 		}
 	}
 
-	return nil, errors.New(errs.ErrBookNotFound)
+	return nil, err.ErrBookNotFound
 }
 
 func (r *mockBookRepository) List(ctx context.Context) ([]*entity.Book, error) {
@@ -60,7 +59,7 @@ func (r *mockBookRepository) Search(ctx context.Context, query string) ([]*entit
 	}
 
 	if len(result) == 0 {
-		return nil, errors.New(errs.ErrBookNotFound)
+		return nil, err.ErrBookNotFound
 	}
 
 	return result, nil
@@ -83,7 +82,7 @@ func (r *mockBookRepository) Update(ctx context.Context, b *entity.Book) error {
 		}
 	}
 
-	return errors.New(errs.ErrBookNotFound)
+	return err.ErrBookNotFound
 }
 
 func (r *mockBookRepository) Delete(ctx context.Context, id int) error {
@@ -94,5 +93,5 @@ func (r *mockBookRepository) Delete(ctx context.Context, id int) error {
 		}
 	}
 
-	return errors.New(errs.ErrBookNotFound)
+	return err.ErrBookNotFound
 }

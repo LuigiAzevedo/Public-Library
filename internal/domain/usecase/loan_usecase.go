@@ -2,11 +2,8 @@ package usecase
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	r "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 	u "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
@@ -29,30 +26,30 @@ func NewLoanUseCase(loan r.LoanRepository, user r.UserRepository, book r.BookRep
 func (s *loanUseCase) BorrowBook(ctx context.Context, userID, bookID int) error {
 	exists, err := s.loanRepo.CheckNotReturned(ctx, userID, bookID)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrBorrowBook, err)
+		return err
 	}
 	if exists {
-		return errors.New(errs.ErrReturnBookFirst)
+		return ErrReturnBookFirst
 	}
 
 	user, err := s.userRepo.Get(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrGetUser, err)
+		return err
 	}
 
 	book, err := s.bookRepo.Get(ctx, bookID)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrGetBook, err)
+		return err
 	}
 
 	book.Amount -= 1
 	if book.Amount < 0 {
-		return errors.New(errs.ErrBookUnavailable)
+		return ErrBookUnavailable
 	}
 
 	err = s.loanRepo.BorrowTransaction(ctx, user, book)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrBorrowBook, err)
+		return err
 	}
 
 	return nil
@@ -61,27 +58,27 @@ func (s *loanUseCase) BorrowBook(ctx context.Context, userID, bookID int) error 
 func (s *loanUseCase) ReturnBook(ctx context.Context, userID, bookID int) error {
 	exists, err := s.loanRepo.CheckNotReturned(ctx, userID, bookID)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrReturnBook, err)
+		return err
 	}
 	if !exists {
-		return errors.New(errs.ErrLoanAlreadyReturned)
+		return ErrLoanAlreadyReturned
 	}
 
 	user, err := s.userRepo.Get(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrGetUser, err)
+		return err
 	}
 
 	book, err := s.bookRepo.Get(ctx, bookID)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrGetBook, err)
+		return err
 	}
 
 	book.Amount += 1
 
 	err = s.loanRepo.ReturnTransaction(ctx, user, book)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrReturnBook, err)
+		return err
 	}
 
 	return nil
@@ -90,7 +87,7 @@ func (s *loanUseCase) ReturnBook(ctx context.Context, userID, bookID int) error 
 func (s *loanUseCase) SearchUserLoans(ctx context.Context, userID int) ([]*entity.Loan, error) {
 	loans, err := s.loanRepo.Search(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", errs.ErrSearchUserLoans, err)
+		return nil, err
 	}
 
 	return loans, nil

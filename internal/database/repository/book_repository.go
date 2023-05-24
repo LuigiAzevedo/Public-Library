@@ -3,10 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	r "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -21,11 +20,11 @@ func NewBookRepository(db *sql.DB) r.BookRepository {
 	}
 }
 
-// Get gets book info by id
+// Get gets book data by id
 func (r *bookRepository) Get(ctx context.Context, id int) (*entity.Book, error) {
 	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM books WHERE id = $1")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", ErrPrepareStatement, err)
 	}
 	defer stmt.Close()
 
@@ -36,10 +35,14 @@ func (r *bookRepository) Get(ctx context.Context, id int) (*entity.Book, error) 
 	var updatedAt sql.NullTime
 	err = row.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &updatedAt, &b.CreatedAt)
 	if err != nil {
-		return nil, errors.New(errs.ErrBookNotFound)
+		if err == sql.ErrNoRows {
+			return nil, ErrBookNotFound
+		} else {
+			return nil, fmt.Errorf("%s: %w", ErrScanData, err)
+		}
 	}
 
-	// check if updated_at is NULL before scanning it
+	// check if updatedAt is not NULL
 	if updatedAt.Valid {
 		b.UpdatedAt = updatedAt.Time
 	}
@@ -51,13 +54,13 @@ func (r *bookRepository) Get(ctx context.Context, id int) (*entity.Book, error) 
 func (r *bookRepository) List(ctx context.Context) ([]*entity.Book, error) {
 	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM books")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", ErrPrepareStatement, err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", ErrExecuteQuery, err)
 	}
 
 	var books []*entity.Book
@@ -67,9 +70,10 @@ func (r *bookRepository) List(ctx context.Context) ([]*entity.Book, error) {
 
 		err = rows.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &updatedAt, &b.CreatedAt)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s: %w", ErrScanData, err)
 		}
-		// check if updated_at is NULL before scanning it
+
+		// check if updatedAt is not NULL
 		if updatedAt.Valid {
 			b.UpdatedAt = updatedAt.Time
 		}
@@ -77,12 +81,8 @@ func (r *bookRepository) List(ctx context.Context) ([]*entity.Book, error) {
 		books = append(books, &b)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	if books == nil {
-		return nil, errors.New(errs.ErrBookNotFound)
+	if len(books) == 0 {
+		return nil, ErrBookNotFound
 	}
 
 	return books, nil
@@ -92,13 +92,13 @@ func (r *bookRepository) List(ctx context.Context) ([]*entity.Book, error) {
 func (r *bookRepository) Search(ctx context.Context, query string) ([]*entity.Book, error) {
 	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM books WHERE LOWER(title) LIKE LOWER($1)")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", ErrPrepareStatement, err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, "%"+query+"%")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", ErrExecuteQuery, err)
 	}
 
 	var books []*entity.Book
@@ -108,9 +108,10 @@ func (r *bookRepository) Search(ctx context.Context, query string) ([]*entity.Bo
 
 		err = rows.Scan(&b.ID, &b.Title, &b.Author, &b.Amount, &updatedAt, &b.CreatedAt)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s: %w", ErrScanData, err)
 		}
-		// check if updated_at is NULL before scanning it
+
+		// check if updatedAt is not NULL
 		if updatedAt.Valid {
 			b.UpdatedAt = updatedAt.Time
 		}
@@ -118,12 +119,8 @@ func (r *bookRepository) Search(ctx context.Context, query string) ([]*entity.Bo
 		books = append(books, &b)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	if books == nil {
-		return nil, errors.New(errs.ErrBookNotFound)
+	if len(books) == 0 {
+		return nil, ErrBookNotFound
 	}
 
 	return books, nil
@@ -133,13 +130,13 @@ func (r *bookRepository) Search(ctx context.Context, query string) ([]*entity.Bo
 func (r *bookRepository) Create(ctx context.Context, b *entity.Book) (int, error) {
 	stmt, err := r.db.PrepareContext(ctx, "INSERT INTO books (title, author, amount) VALUES ($1, $2, $3) RETURNING id")
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("%s: %w", ErrPrepareStatement, err)
 	}
 	defer stmt.Close()
 
 	err = stmt.QueryRowContext(ctx, b.Title, b.Author, b.Amount).Scan(&b.ID)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("%s: %w", ErrExecuteQuery, err)
 	}
 
 	return b.ID, nil
@@ -149,20 +146,22 @@ func (r *bookRepository) Create(ctx context.Context, b *entity.Book) (int, error
 func (r *bookRepository) Update(ctx context.Context, b *entity.Book) error {
 	stmt, err := r.db.PrepareContext(ctx, "UPDATE books SET title = $1, author = $2, amount = $3, updated_at = NOW() WHERE id = $4")
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", ErrPrepareStatement, err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, b.Title, b.Author, b.Amount, b.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", ErrExecuteStatement, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return err
-	} else if rowsAffected == 0 {
-		return errors.New("book not found")
+		return fmt.Errorf("%s: %w", ErrRetrieveRows, err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrBookNotFound
 	}
 
 	return nil
@@ -178,14 +177,16 @@ func (r *bookRepository) Delete(ctx context.Context, id int) error {
 
 	result, err := stmt.ExecContext(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", ErrExecuteStatement, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return err
-	} else if rowsAffected == 0 {
-		return errors.New("book not found")
+		return fmt.Errorf("%s: %w", ErrRetrieveRows, err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrBookNotFound
 	}
 
 	return nil

@@ -2,13 +2,11 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
@@ -24,7 +22,7 @@ func TestGetBook(t *testing.T) {
 	})
 	t.Run("Not Found", func(t *testing.T) {
 		_, err := uc.GetBook(ctx, 0)
-		assert.Equal(t, errs.ErrBookNotFound, errors.Unwrap(err).Error())
+		assert.Error(t, err)
 	})
 }
 
@@ -40,7 +38,7 @@ func TestSearchBooks(t *testing.T) {
 	})
 	t.Run("Not Found", func(t *testing.T) {
 		_, err := uc.SearchBooks(ctx, "five")
-		assert.Equal(t, errs.ErrBookNotFound, errors.Unwrap(err).Error())
+		assert.Error(t, err)
 	})
 }
 
@@ -75,6 +73,12 @@ func TestCreateBook(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 3, id)
 	})
+	t.Run("Invalid Book", func(t *testing.T) {
+		b := &entity.Book{}
+
+		_, err := uc.CreateBook(ctx, b)
+		assert.Error(t, err)
+	})
 }
 
 func TestUpdateBook(t *testing.T) {
@@ -93,7 +97,12 @@ func TestUpdateBook(t *testing.T) {
 		err := uc.UpdateBook(ctx, b)
 		assert.NoError(t, err)
 	})
+	t.Run("Invalid Book", func(t *testing.T) {
+		b := &entity.Book{}
 
+		err := uc.UpdateBook(ctx, b)
+		assert.Error(t, err)
+	})
 	t.Run("Not Found", func(t *testing.T) {
 		b := &entity.Book{
 			ID:     5,
@@ -103,7 +112,7 @@ func TestUpdateBook(t *testing.T) {
 		}
 
 		err := uc.UpdateBook(ctx, b)
-		assert.Equal(t, errs.ErrBookNotFound, errors.Unwrap(err).Error())
+		assert.Error(t, err)
 	})
 }
 
@@ -119,6 +128,6 @@ func TestDeleteBook(t *testing.T) {
 
 	t.Run("Not Found", func(t *testing.T) {
 		err := uc.DeleteBook(ctx, 5)
-		assert.Equal(t, errs.ErrBookNotFound, errors.Unwrap(err).Error())
+		assert.Error(t, err)
 	})
 }

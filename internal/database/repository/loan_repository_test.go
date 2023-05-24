@@ -149,7 +149,7 @@ func TestSearch(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("Loans Not Found", func(t *testing.T) {
+	t.Run("Not Found", func(t *testing.T) {
 		mock.ExpectPrepare("SELECT \\* FROM loans WHERE user_id =").
 			ExpectQuery().
 			WithArgs(10).

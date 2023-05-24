@@ -64,6 +64,19 @@ func TestGetUser(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
+
+	t.Run("Not Found", func(t *testing.T) {
+		mock.ExpectPrepare("SELECT \\* FROM users WHERE id = ").
+			ExpectQuery().
+			WithArgs(user.ID).
+			WillReturnError(sql.ErrNoRows)
+
+		gotUser, err := repo.Get(context.Background(), user.ID)
+		assert.Error(t, err)
+		assert.Empty(t, gotUser)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }
 
 func TestCreateUser(t *testing.T) {
@@ -164,7 +177,7 @@ func TestUpdateUser(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("User Not Found", func(t *testing.T) {
+	t.Run("Not Found", func(t *testing.T) {
 		mock.ExpectPrepare("UPDATE users").
 			ExpectExec().
 			WithArgs(user.Username, user.Password, user.Email, user.ID).
@@ -215,7 +228,7 @@ func TestDeleteUser(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("User Not Found", func(t *testing.T) {
+	t.Run("Not Found", func(t *testing.T) {
 		mock.ExpectPrepare("DELETE FROM users WHERE id =").
 			ExpectExec().
 			WithArgs(1).

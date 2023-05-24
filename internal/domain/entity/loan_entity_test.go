@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,12 +20,12 @@ func TestNewLoan(t *testing.T) {
 		"Invalid UserID": {
 			userID: 0,
 			bookID: 1,
-			want:   errors.New("user ID and book ID can't be empty"),
+			want:   ErrInvalidLoan,
 		},
 		"Invalid BookID": {
 			userID: 1,
 			bookID: 0,
-			want:   errors.New("user ID and book ID can't be empty"),
+			want:   ErrInvalidLoan,
 		},
 	}
 	for name, tc := range tests {

@@ -3,10 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	r "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 )
 
@@ -25,19 +24,21 @@ func NewLoanRepository(db *sql.DB) r.LoanRepository {
 func (r *loanRepository) CheckNotReturned(ctx context.Context, userID int, bookID int) (bool, error) {
 	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM loans WHERE is_returned = false AND user_id = $1 AND book_id = $2")
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("%s: %w", ErrPrepareStatement, err)
 	}
 	defer stmt.Close()
 
 	l := &entity.Loan{}
 
 	row := stmt.QueryRowContext(ctx, userID, bookID)
+
 	err = row.Scan(&l.ID, &l.UserID, &l.BookID, &l.Is_returned, &l.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			// all books are returned
 			return false, nil
 		}
-		return false, err
+		return false, fmt.Errorf("%s: %w", ErrScanData, err)
 	}
 
 	return true, nil
@@ -47,13 +48,13 @@ func (r *loanRepository) CheckNotReturned(ctx context.Context, userID int, bookI
 func (r *loanRepository) Search(ctx context.Context, userID int) ([]*entity.Loan, error) {
 	stmt, err := r.db.PrepareContext(ctx, "SELECT * FROM loans WHERE user_id = $1")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", ErrPrepareStatement, err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", ErrExecuteQuery, err)
 	}
 
 	var loans []*entity.Loan
@@ -62,18 +63,14 @@ func (r *loanRepository) Search(ctx context.Context, userID int) ([]*entity.Loan
 
 		err = rows.Scan(&l.ID, &l.UserID, &l.BookID, &l.Is_returned, &l.CreatedAt)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s: %w", ErrScanData, err)
 		}
 
 		loans = append(loans, &l)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	if loans == nil {
-		return nil, errors.New(errs.ErrNoLoansFound)
+	if len(loans) == 0 {
+		return nil, ErrLoanNotFound
 	}
 
 	return loans, nil
@@ -83,27 +80,27 @@ func (r *loanRepository) Search(ctx context.Context, userID int) ([]*entity.Loan
 func (r *loanRepository) BorrowTransaction(ctx context.Context, u *entity.User, b *entity.Book) error {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", ErrBeginTransaction, err)
 	}
 
 	_, err = tx.ExecContext(ctx, "UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return rbErr
+			return fmt.Errorf("%s: %w", ErrRollback, rbErr)
 		}
-		return err
+		return fmt.Errorf("%s: %w", ErrExecuteStatement, err)
 	}
 
 	_, err = tx.ExecContext(ctx, "INSERT INTO loans (user_id, book_id) VALUES ($1, $2)", u.ID, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return rbErr
+			return fmt.Errorf("%s: %w", ErrRollback, rbErr)
 		}
-		return err
+		return fmt.Errorf("%s: %w", ErrExecuteStatement, err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return fmt.Errorf("%s: %w", ErrCommit, err)
 	}
 
 	return nil
@@ -113,27 +110,27 @@ func (r *loanRepository) BorrowTransaction(ctx context.Context, u *entity.User, 
 func (r *loanRepository) ReturnTransaction(ctx context.Context, u *entity.User, b *entity.Book) error {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", ErrBeginTransaction, err)
 	}
 
 	_, err = tx.ExecContext(ctx, "UPDATE books SET amount = $1 WHERE id = $2", b.Amount, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return rbErr
+			return fmt.Errorf("%s: %w", ErrRollback, rbErr)
 		}
-		return err
+		return fmt.Errorf("%s: %w", ErrExecuteStatement, err)
 	}
 
 	_, err = tx.ExecContext(ctx, "UPDATE loans SET is_returned = $1 WHERE user_id = $2 AND book_id = $3", true, u.ID, b.ID)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return rbErr
+			return fmt.Errorf("%s: %w", ErrRollback, rbErr)
 		}
-		return err
+		return fmt.Errorf("%s: %w", ErrExecuteStatement, err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return fmt.Errorf("%s: %w", ErrCommit, err)
 	}
 
 	return nil

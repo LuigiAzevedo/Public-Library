@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"net/mail"
 	"strings"
 	"time"
@@ -26,8 +25,7 @@ func NewUser(username, password, email string) (*User, error) {
 		UpdatedAt: time.Time{},
 	}
 
-	err := user.Validate()
-	if err != nil {
+	if err := user.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -37,24 +35,24 @@ func NewUser(username, password, email string) (*User, error) {
 // Validate validates the user entity.
 func (user *User) Validate() error {
 	if user.Username == "" || user.Password == "" || user.Email == "" {
-		return errors.New("username, password and email can't be empty")
+		return ErrEmptyUserField
 	}
 
 	if strings.ContainsAny(user.Username, " \t\r\n") || strings.ContainsAny(user.Password, " \t\r\n") {
-		return errors.New("username and password can't have spaces")
+		return ErrFieldWithSpaces
 	}
 
 	if len(user.Password) < 6 {
-		return errors.New("password shorter than 6 characters")
+		return ErrShortPassword
 	}
 
 	if len(user.Password) > 72 {
-		return errors.New("password longer than 72 characters")
+		return ErrLongPassword
 	}
 
 	_, err := mail.ParseAddress(user.Email)
 	if err != nil {
-		return errors.New("invalid email address")
+		return ErrInvalidEmail
 	}
 
 	return nil

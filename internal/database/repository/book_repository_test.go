@@ -66,6 +66,18 @@ func TestGetBook(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
+	t.Run("Not Found", func(t *testing.T) {
+		mock.ExpectPrepare("SELECT \\* FROM books WHERE id = ").
+			ExpectQuery().
+			WithArgs(book.ID).
+			WillReturnError(sql.ErrNoRows)
+
+		gotBook, err := repo.Get(context.Background(), book.ID)
+		assert.Error(t, err)
+		assert.Empty(t, gotBook)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }
 
 func TestListBook(t *testing.T) {
@@ -231,6 +243,19 @@ func TestSearchBooks(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
+	t.Run("Not Found", func(t *testing.T) {
+		mock.ExpectPrepare("SELECT \\* FROM books WHERE LOWER\\(title\\) LIKE LOWER\\(\\$1\\)").
+			ExpectQuery().
+			WithArgs("%Let's Go%").
+			WillReturnRows(&sqlmock.Rows{})
+
+		gotBooks, err := repo.Search(context.Background(), "Let's Go")
+
+		assert.Error(t, err)
+		assert.Empty(t, gotBooks)
+
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }
 
 func TestCreateBook(t *testing.T) {
@@ -334,7 +359,7 @@ func TestUpdateBook(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("Book Not Found", func(t *testing.T) {
+	t.Run("Not Found", func(t *testing.T) {
 		mock.ExpectPrepare("UPDATE books").
 			ExpectExec().
 			WithArgs(book.Title, book.Author, book.Amount, book.ID).
@@ -393,7 +418,7 @@ func TestDeleteBook(t *testing.T) {
 
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-	t.Run("Book Not Found", func(t *testing.T) {
+	t.Run("Not Found", func(t *testing.T) {
 		mock.ExpectPrepare("DELETE FROM books WHERE id =").
 			ExpectExec().
 			WithArgs(book.ID).

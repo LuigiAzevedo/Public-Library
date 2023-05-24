@@ -2,15 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog/log"
 
+	repoErr "github.com/LuigiAzevedo/public-library-v2/internal/database/repository"
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	uc "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
@@ -36,7 +35,7 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidUserID, http.StatusBadRequest)
+		http.Error(w, invalidUserID, http.StatusBadRequest)
 		return
 	}
 
@@ -47,12 +46,12 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrUserNotFound {
-				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
+			if err == repoErr.ErrUserNotFound {
+				http.Error(w, userNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrGetUser, http.StatusInternalServerError)
+				http.Error(w, getUser, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -63,7 +62,7 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(u); err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrGetUser, http.StatusInternalServerError)
+		http.Error(w, getUser, http.StatusInternalServerError)
 		return
 	}
 }
@@ -74,7 +73,7 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(w, invalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
@@ -85,12 +84,12 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrAlreadyExists {
-				http.Error(w, errs.ErrAlreadyExists, http.StatusBadRequest)
+			if err == repoErr.ErrAlreadyExists {
+				http.Error(w, alreadyExists, http.StatusBadRequest)
 			} else {
-				http.Error(w, errs.ErrCreateUser, http.StatusInternalServerError)
+				http.Error(w, createUser, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -101,7 +100,7 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(map[string]int{"id": id}); err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrCreateUser, http.StatusInternalServerError)
+		http.Error(w, createUser, http.StatusInternalServerError)
 		return
 	}
 }
@@ -112,14 +111,14 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(w, invalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
 	u.ID, err = strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidUserID, http.StatusBadRequest)
+		http.Error(w, invalidUserID, http.StatusBadRequest)
 		return
 	}
 
@@ -130,16 +129,15 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrUserNotFound {
-				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
-				return
-			} else if errors.Unwrap(err).Error() == errs.ErrAlreadyExists {
-				http.Error(w, errs.ErrAlreadyExists, http.StatusBadRequest)
-			} else {
-				http.Error(w, errs.ErrUpdateUser, http.StatusInternalServerError)
-				return
+			switch err {
+			case repoErr.ErrUserNotFound:
+				http.Error(w, userNotFound, http.StatusNotFound)
+			case repoErr.ErrAlreadyExists:
+				http.Error(w, alreadyExists, http.StatusBadRequest)
+			default:
+				http.Error(w, updateUser, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -152,7 +150,7 @@ func (h *userHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidUserID, http.StatusBadRequest)
+		http.Error(w, invalidUserID, http.StatusBadRequest)
 		return
 	}
 
@@ -163,16 +161,15 @@ func (h *userHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrUserNotFound {
-				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
-				return
+			if err == repoErr.ErrUserNotFound {
+				http.Error(w, userNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrDeleteUser, http.StatusInternalServerError)
-				return
+				http.Error(w, deleteUser, http.StatusInternalServerError)
 			}
 		}
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)

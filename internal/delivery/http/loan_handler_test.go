@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -14,8 +13,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	repoErr "github.com/LuigiAzevedo/public-library-v2/internal/database/repository"
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
+	ucErr "github.com/LuigiAzevedo/public-library-v2/internal/domain/usecase"
 	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
@@ -54,7 +54,7 @@ func TestSearchUserLoan(t *testing.T) {
 				uc.EXPECT().
 					SearchUserLoans(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, errors.New(errs.ErrNoLoansFound)))
+					Return(nil, repoErr.ErrLoanNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -66,7 +66,7 @@ func TestSearchUserLoan(t *testing.T) {
 				uc.EXPECT().
 					SearchUserLoans(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetBook, sql.ErrConnDone))
+					Return(nil, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -141,7 +141,7 @@ func TestBorrowBook(t *testing.T) {
 				uc.EXPECT().
 					BorrowBook(gomock.Any(), gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrGetBook))
+					Return(repoErr.ErrBookNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -153,7 +153,7 @@ func TestBorrowBook(t *testing.T) {
 				uc.EXPECT().
 					BorrowBook(gomock.Any(), gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrGetUser))
+					Return(repoErr.ErrUserNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -165,7 +165,7 @@ func TestBorrowBook(t *testing.T) {
 				uc.EXPECT().
 					BorrowBook(gomock.Any(), gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrReturnBookFirst))
+					Return(ucErr.ErrReturnBookFirst)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -177,7 +177,7 @@ func TestBorrowBook(t *testing.T) {
 				uc.EXPECT().
 					BorrowBook(gomock.Any(), gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrBookUnavailable))
+					Return(ucErr.ErrBookUnavailable)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -266,7 +266,7 @@ func TestReturnBook(t *testing.T) {
 				uc.EXPECT().
 					ReturnBook(gomock.Any(), gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(errors.New(errs.ErrLoanAlreadyReturned))
+					Return(ucErr.ErrLoanAlreadyReturned)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
