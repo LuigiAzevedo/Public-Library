@@ -6,12 +6,12 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog/log"
 
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
+	repoErr "github.com/LuigiAzevedo/public-library-v2/internal/database/repository"
+	ucErr "github.com/LuigiAzevedo/public-library-v2/internal/domain/usecase"
 	uc "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
@@ -36,7 +36,7 @@ func (h *loanHandler) SearchUserLoans(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidUserID, http.StatusBadRequest)
+		http.Error(w, invalidUserID, http.StatusBadRequest)
 		return
 	}
 
@@ -47,12 +47,12 @@ func (h *loanHandler) SearchUserLoans(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrNoLoansFound {
-				http.Error(w, errs.ErrNoLoansFound, http.StatusNotFound)
+			if err == repoErr.ErrLoanNotFound {
+				http.Error(w, loanNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrSearchUserLoans, http.StatusInternalServerError)
+				http.Error(w, searchUserLoans, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -63,7 +63,7 @@ func (h *loanHandler) SearchUserLoans(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(l); err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrSearchUserLoans, http.StatusInternalServerError)
+		http.Error(w, searchUserLoans, http.StatusInternalServerError)
 		return
 	}
 }
@@ -79,7 +79,7 @@ func (h *loanHandler) BorrowBook(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil && err != io.EOF {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(w, invalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
@@ -90,20 +90,19 @@ func (h *loanHandler) BorrowBook(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			error := strings.Split(err.Error(), ":")
-			switch error[0] {
-			case errs.ErrGetBook:
-				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
-			case errs.ErrGetUser:
-				http.Error(w, errs.ErrUserNotFound, http.StatusNotFound)
-			case errs.ErrReturnBookFirst:
-				http.Error(w, errs.ErrReturnBookFirst, http.StatusBadRequest)
-			case errs.ErrBookUnavailable:
-				http.Error(w, errs.ErrBookUnavailable, http.StatusNotFound)
+			switch err {
+			case repoErr.ErrBookNotFound:
+				http.Error(w, bookNotFound, http.StatusNotFound)
+			case repoErr.ErrUserNotFound:
+				http.Error(w, userNotFound, http.StatusNotFound)
+			case ucErr.ErrReturnBookFirst:
+				http.Error(w, returnBookFirst, http.StatusBadRequest)
+			case ucErr.ErrBookUnavailable:
+				http.Error(w, bookUnavailable, http.StatusNotFound)
 			default:
-				http.Error(w, errs.ErrBorrowBook, http.StatusInternalServerError)
+				http.Error(w, borrowBook, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -119,7 +118,7 @@ func (h *loanHandler) ReturnBook(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil && !errors.Is(err, io.EOF) {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(w, invalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
@@ -130,12 +129,12 @@ func (h *loanHandler) ReturnBook(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if err.Error() == errs.ErrLoanAlreadyReturned {
-				http.Error(w, errs.ErrLoanAlreadyReturned, http.StatusNotFound)
+			if err == ucErr.ErrLoanAlreadyReturned {
+				http.Error(w, loanAlreadyReturned, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrReturnBook, http.StatusInternalServerError)
+				http.Error(w, returnBook, http.StatusInternalServerError)
 			}
 		}
 		return

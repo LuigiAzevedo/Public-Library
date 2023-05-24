@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -14,8 +13,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	repoErr "github.com/LuigiAzevedo/public-library-v2/internal/database/repository"
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
@@ -54,7 +53,7 @@ func TestGetUser(t *testing.T) {
 				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetUser, errors.New(errs.ErrUserNotFound)))
+					Return(nil, repoErr.ErrUserNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -66,7 +65,7 @@ func TestGetUser(t *testing.T) {
 				uc.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(nil, fmt.Errorf("%s: %w", errs.ErrGetUser, sql.ErrConnDone))
+					Return(nil, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -138,7 +137,7 @@ func TestCreateUser(t *testing.T) {
 				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(0, fmt.Errorf("%s: %w", errs.ErrCreateUser, errors.New(errs.ErrAlreadyExists)))
+					Return(0, repoErr.ErrAlreadyExists)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -150,7 +149,7 @@ func TestCreateUser(t *testing.T) {
 				uc.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(0, fmt.Errorf("%s: %w", errs.ErrCreateUser, sql.ErrConnDone))
+					Return(0, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -239,7 +238,7 @@ func TestUpdateUser(t *testing.T) {
 				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(fmt.Errorf("%s: %w", errs.ErrUpdateUser, errors.New(errs.ErrUserNotFound)))
+					Return(repoErr.ErrUserNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -252,7 +251,7 @@ func TestUpdateUser(t *testing.T) {
 				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(fmt.Errorf("%s: %w", errs.ErrUpdateUser, errors.New(errs.ErrAlreadyExists)))
+					Return(repoErr.ErrAlreadyExists)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -265,7 +264,7 @@ func TestUpdateUser(t *testing.T) {
 				uc.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(fmt.Errorf("%s: %w", errs.ErrUpdateUser, sql.ErrConnDone))
+					Return(sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -332,7 +331,7 @@ func TestDeleteUser(t *testing.T) {
 				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(fmt.Errorf("%s: %w", errs.ErrDeleteUser, errors.New(errs.ErrUserNotFound)))
+					Return(repoErr.ErrUserNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusNotFound, recorder.Code)
@@ -344,7 +343,7 @@ func TestDeleteUser(t *testing.T) {
 				uc.EXPECT().
 					DeleteUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(fmt.Errorf("%s: %w", errs.ErrDeleteUser, sql.ErrConnDone))
+					Return(sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusInternalServerError, recorder.Code)

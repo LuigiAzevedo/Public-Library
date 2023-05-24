@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -10,8 +9,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog/log"
 
+	repoErr "github.com/LuigiAzevedo/public-library-v2/internal/database/repository"
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	uc "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
 
@@ -38,7 +37,7 @@ func (h *bookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidBookID, http.StatusBadRequest)
+		http.Error(w, invalidBookID, http.StatusBadRequest)
 		return
 	}
 
@@ -49,12 +48,12 @@ func (h *bookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
-				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			if err == repoErr.ErrBookNotFound {
+				http.Error(w, bookNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrGetBook, http.StatusInternalServerError)
+				http.Error(w, getBook, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -65,7 +64,7 @@ func (h *bookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(b); err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrGetBook, http.StatusInternalServerError)
+		http.Error(w, getBook, http.StatusInternalServerError)
 		return
 	}
 }
@@ -80,7 +79,7 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil && err != io.EOF {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrWrongBodyTitle, http.StatusBadRequest)
+		http.Error(w, wrongBodyTitle, http.StatusBadRequest)
 		return
 	}
 
@@ -97,12 +96,12 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
-				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			if err == repoErr.ErrBookNotFound {
+				http.Error(w, bookNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrSearchBook, http.StatusInternalServerError)
+				http.Error(w, searchBook, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -113,7 +112,7 @@ func (h *bookHandler) SearchBooks(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(b); err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrSearchBook, http.StatusInternalServerError)
+		http.Error(w, searchBook, http.StatusInternalServerError)
 		return
 	}
 }
@@ -124,7 +123,7 @@ func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(w, invalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
@@ -135,9 +134,9 @@ func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			http.Error(w, errs.ErrCreateBook, http.StatusInternalServerError)
+			http.Error(w, createBook, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -147,7 +146,7 @@ func (h *bookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(map[string]int{"id": id}); err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrCreateBook, http.StatusInternalServerError)
+		http.Error(w, createBook, http.StatusInternalServerError)
 		return
 	}
 }
@@ -158,14 +157,14 @@ func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(w, invalidRequestBody, http.StatusBadRequest)
 		return
 	}
 
 	b.ID, err = strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidBookID, http.StatusBadRequest)
+		http.Error(w, invalidBookID, http.StatusBadRequest)
 		return
 	}
 
@@ -176,12 +175,12 @@ func (h *bookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
-				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			if err == repoErr.ErrBookNotFound {
+				http.Error(w, bookNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrUpdateBook, http.StatusInternalServerError)
+				http.Error(w, updateBook, http.StatusInternalServerError)
 			}
 		}
 		return
@@ -194,7 +193,7 @@ func (h *bookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Error().Msg(err.Error())
-		http.Error(w, errs.ErrInvalidBookID, http.StatusBadRequest)
+		http.Error(w, invalidBookID, http.StatusBadRequest)
 		return
 	}
 
@@ -205,12 +204,12 @@ func (h *bookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case <-ctx.Done():
-			http.Error(w, errs.ErrTimeout, http.StatusGatewayTimeout)
+			http.Error(w, timeout, http.StatusGatewayTimeout)
 		default:
-			if errors.Unwrap(err).Error() == errs.ErrBookNotFound {
-				http.Error(w, errs.ErrBookNotFound, http.StatusNotFound)
+			if err == repoErr.ErrBookNotFound {
+				http.Error(w, bookNotFound, http.StatusNotFound)
 			} else {
-				http.Error(w, errs.ErrDeleteBook, http.StatusInternalServerError)
+				http.Error(w, deleteBook, http.StatusInternalServerError)
 			}
 		}
 		return
