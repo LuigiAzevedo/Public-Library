@@ -2,11 +2,9 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	r "github.com/LuigiAzevedo/public-library-v2/internal/ports/repository"
 	u "github.com/LuigiAzevedo/public-library-v2/internal/ports/usecase"
 )
@@ -25,7 +23,7 @@ func NewBookUseCase(repository r.BookRepository) u.BookUsecase {
 func (s *bookUseCase) GetBook(ctx context.Context, id int) (*entity.Book, error) {
 	book, err := s.bookRepo.Get(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", errs.ErrGetBook, err)
+		return nil, err
 	}
 
 	return book, nil
@@ -34,7 +32,7 @@ func (s *bookUseCase) GetBook(ctx context.Context, id int) (*entity.Book, error)
 func (s *bookUseCase) SearchBooks(ctx context.Context, query string) ([]*entity.Book, error) {
 	books, err := s.bookRepo.Search(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", errs.ErrSearchBook, err)
+		return nil, err
 	}
 
 	return books, nil
@@ -43,7 +41,7 @@ func (s *bookUseCase) SearchBooks(ctx context.Context, query string) ([]*entity.
 func (s *bookUseCase) ListBooks(ctx context.Context) ([]*entity.Book, error) {
 	books, err := s.bookRepo.List(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", errs.ErrSearchBook, err)
+		return nil, err
 	}
 
 	return books, nil
@@ -52,12 +50,12 @@ func (s *bookUseCase) ListBooks(ctx context.Context) ([]*entity.Book, error) {
 func (s *bookUseCase) CreateBook(ctx context.Context, b *entity.Book) (int, error) {
 	book, err := entity.NewBook(b.Title, b.Author, b.Amount)
 	if err != nil {
-		return 0, fmt.Errorf("%s: %w", errs.ErrCreateBook, err)
+		return 0, err
 	}
 
 	id, err := s.bookRepo.Create(ctx, book)
 	if err != nil {
-		return 0, fmt.Errorf("%s: %w", errs.ErrCreateBook, err)
+		return 0, err
 	}
 
 	return id, nil
@@ -68,12 +66,12 @@ func (s *bookUseCase) UpdateBook(ctx context.Context, b *entity.Book) error {
 
 	err := b.Validate()
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrUpdateBook, err)
+		return err
 	}
 
 	err = s.bookRepo.Update(ctx, b)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrUpdateBook, err)
+		return err
 	}
 
 	return nil
@@ -82,7 +80,7 @@ func (s *bookUseCase) UpdateBook(ctx context.Context, b *entity.Book) error {
 func (s *bookUseCase) DeleteBook(ctx context.Context, id int) error {
 	err := s.bookRepo.Delete(ctx, id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errs.ErrDeleteBook, err)
+		return err
 	}
 
 	return nil

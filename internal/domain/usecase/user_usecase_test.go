@@ -2,13 +2,11 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/LuigiAzevedo/public-library-v2/internal/domain/entity"
-	"github.com/LuigiAzevedo/public-library-v2/internal/errs"
 	"github.com/LuigiAzevedo/public-library-v2/internal/mock"
 )
 
@@ -24,7 +22,7 @@ func TestGetUser(t *testing.T) {
 	})
 	t.Run("Not Found", func(t *testing.T) {
 		_, err := uc.GetUser(ctx, 0)
-		assert.Equal(t, errs.ErrUserNotFound, errors.Unwrap(err).Error())
+		assert.Error(t, err)
 	})
 }
 
@@ -43,6 +41,12 @@ func TestCreateUser(t *testing.T) {
 		id, err := uc.CreateUser(ctx, u)
 		assert.NoError(t, err)
 		assert.Equal(t, 3, id)
+	})
+	t.Run("Invalid User", func(t *testing.T) {
+		u := &entity.User{}
+
+		_, err := uc.CreateUser(ctx, u)
+		assert.Error(t, err)
 	})
 }
 
@@ -71,7 +75,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		err := uc.UpdateUser(ctx, u)
-		assert.Equal(t, errs.ErrUserNotFound, errors.Unwrap(err).Error())
+		assert.Error(t, err)
 	})
 }
 
@@ -86,6 +90,6 @@ func TestDeleteUser(t *testing.T) {
 	})
 	t.Run("Not Found", func(t *testing.T) {
 		err := uc.DeleteUser(ctx, 5)
-		assert.Equal(t, errs.ErrUserNotFound, errors.Unwrap(err).Error())
+		assert.Error(t, err)
 	})
 }
