@@ -22,7 +22,7 @@ tasks:
     cmds:
       - go build -o bin/app cmd/main.go
   run:
-    desc: Run compiled compiled
+    desc: Run compiled code
     deps: [build]
     cmds:
       - ./bin/app
